@@ -10,6 +10,7 @@ from app.models.comment import Comment
 
 from app.api.v1 import health
 from app.api.v1 import auth
+from app.api.v1 import user
 
 Base.metadata.create_all(bind = engine)
 
@@ -17,3 +18,4 @@ app = FastAPI()
 
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(user.router)

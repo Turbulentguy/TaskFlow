@@ -1,6 +1,7 @@
 from app.db.base import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 class Project(Base):
     __tablename__ = "Project"
@@ -9,6 +10,8 @@ class Project(Base):
     name = Column(String(255), unique = False, nullable = False)
     description = Column(String(255), unique = False, nullable = False)
     owner_id = Column(Integer, ForeignKey("User.id"), nullable = False)
+    created_at = Column(DateTime, server_default = func.now(), nullable = False)
+    updated_at = Column(DateTime, server_default = func.now(), onupdate = func.now(), nullable = False)
 
     user = relationship("User", back_populates = "projects")
     project_members = relationship("ProjectMember", back_populates = "project")

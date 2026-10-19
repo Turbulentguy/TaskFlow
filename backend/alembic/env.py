@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from app.models.user import User
 from app.models.project import Project
-from app.models.projectmember import ProjectMember
+from app.models.members import ProjectMember
 from app.models.task import Task
 from app.models.comment import Comment
 

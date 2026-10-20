@@ -19,6 +19,7 @@ class User(Base):
     created_at = Column(DateTime, server_default = func.now())
 
     projects = relationship("Project", back_populates = "user")
-    tasks = relationship("Task", back_populates = "assignee")
+    task_assignee = relationship("Task", back_populates = "assignee", foreign_keys = "Task.assignee_id")
+    task_creator = relationship("Task", back_populates = "creator", foreign_keys = "Task.created_by")
     comments = relationship("Comment", back_populates = "user")
     project_members = relationship("ProjectMember", back_populates = "member")

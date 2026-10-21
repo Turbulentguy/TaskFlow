@@ -15,6 +15,7 @@ from app.api.v1 import projects
 from app.api.v1 import members
 from app.api.v1 import task
 from app.api.v1 import comments
+from app.api.v1 import dashboard
 
 Base.metadata.create_all(bind = engine)
 
@@ -27,3 +28,4 @@ app.include_router(projects.router)
 app.include_router(members.router)
 app.include_router(task.router)
 app.include_router(comments.router)
+app.include_router(dashboard.router)

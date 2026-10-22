@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
+
+.left-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    background-color: linear-gradient(to right, rgb(79, 0, 238), rgb(227, 213, 255));
+
+    gap: 20px;
+}
+
+.logo-dashboard {
+    width: 100px;
+    height: 100px;
+
+    border-radius: 50%;
+
+    margin-left: 20px;
+}
+
+.brand-dashboard {
+    font-style: 'Google Sans', sans-serif;
+    font-size: 50px;
+    font-weight: 700;
+    color: white;
+}

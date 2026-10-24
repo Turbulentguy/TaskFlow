@@ -33,9 +33,6 @@
   background: linear-gradient(to right, rgb(79, 0, 238), rgb(227, 213, 255));
   background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  margin-top: 50px;
-  margin-bottom: 15px;
 }
 
 .logo {

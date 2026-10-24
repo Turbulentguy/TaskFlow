@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL;
 
 async function registerUser(form) {
     const response = await fetch(
@@ -19,10 +19,10 @@ async function registerUser(form) {
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.detail | "Registration failed")
+        throw new Error(data.detail | "Registration failed");
     }
 
-    return data
+    return data;
 }
 
 async function loginUser(form) {
@@ -43,10 +43,10 @@ async function loginUser(form) {
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.detail || "Login failed")
+        throw new Error(data.detail || "Login failed");
     }
 
-    return data
+    return data;
 }
 
-export { registerUser, loginUser }
+export { registerUser, loginUser };

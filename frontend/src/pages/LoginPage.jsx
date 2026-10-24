@@ -7,7 +7,8 @@ import '../pages/LoginPage.css'
 
 function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
-  const [isDashboard, setIsDashBoard] = useState(false)
+  const [isDashboard, setIsDashBoard] = useState(false);
+  const [user, setUser] = useState(null);
   const [form, setForm] = useState({
     email: '',
     password: ''
@@ -28,10 +29,15 @@ function LoginPage() {
     try {
       const data = await loginUser(form);
 
-      console.log(data.access_token);
-      setIsDashBoard(true)
-    } catch (e) {
-      alert(e.message);
+      setUser({
+        ...data.user,
+        access_token: data.access_token
+      });
+
+      setIsDashBoard(true);
+
+    } catch (error) {
+      alert(error.message);
     }
   }
 
@@ -40,7 +46,7 @@ function LoginPage() {
   }
 
   if (isDashboard) {
-    return <DashboardPage />
+    return <DashboardPage user={user}/>
   }
 
   return (

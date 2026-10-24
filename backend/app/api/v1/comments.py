@@ -11,6 +11,7 @@ from app.models.members import ProjectMember
 from app.models.comment import Comment
 
 router = APIRouter(
+    prefix = "/api/v1",
     tags = ["Comments"]
 )
 

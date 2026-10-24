@@ -11,6 +11,7 @@ from app.models.project import Project
 from app.models.members import ProjectMember
 
 router = APIRouter(
+    prefix = "/api/v1",
     tags = ["Tasks"]
 )
 

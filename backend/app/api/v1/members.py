@@ -9,7 +9,7 @@ from app.models.members import ProjectMember
 from app.models.project import Project
 
 router = APIRouter(
-    prefix = "/projects",
+    prefix = "/api/v1/projects",
     tags = ["Members"]
 )
 

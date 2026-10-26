@@ -3,11 +3,13 @@ import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg'
 import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2 } from 'lucide-react'
 
 import LoginPage from '../pages/LoginPage'
+import ProjectPage from '../pages/ProjectPage'
 import '../pages/DashBoardPage.css'
 import { getDashboard } from '../services/dashboardservice.js'
 
 function DashboardPage({ user }) {
     const [isLogin, setIsLogin] = useState(false);
+    const [isProject, setIsProject] = useState(false);
     const [statisticDashboard, setStatisticDashboard] = useState(null);
 
     useEffect(() => {
@@ -27,6 +29,10 @@ function DashboardPage({ user }) {
         return <LoginPage />
     }
 
+    if (isProject) {
+        return <ProjectPage user={user}/>
+    }
+
     return (
         <div className="dashboard-layout">
             <div className="left-container">
@@ -37,11 +43,11 @@ function DashboardPage({ user }) {
                     </p>
                 </div>
                 <div className="side-bar-menu">
-                    <p className="side-bar-menu-selections">
+                    <p className="side-bar-menu-selections-dashboard">
                         <House size={40} color="white"/>
                         <span>Dashboard</span>
                     </p>
-                    <p className="side-bar-menu-selections">
+                    <p className="side-bar-menu-selections" onClick={() => {setIsProject(true)}}>
                         <Folder size={40} color="white"/>
                         <span>Projects</span>
                     </p>

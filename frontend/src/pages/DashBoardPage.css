@@ -304,6 +304,29 @@
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+.side-bar-menu-selections-dashboard {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 25px;
+    font-weight: 400;
+    color: white;
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    gap: 25px;
+    row-gap: 0px;
+    margin-left: 30px;
+
+    background-color: #3d00bd;
+    border-radius: 8px;
+    padding: 14px;
+
+    user-select: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
 .side-bar-menu-selections.logout-selection {
     margin-top: auto;
 }

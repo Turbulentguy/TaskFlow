@@ -1,8 +1,8 @@
-const API_KEY = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 async function getDashboard(user) {
     const response = await fetch(
-        `${API_KEY}/dashboard/summary`,
+        `${API_URL}/dashboard/summary`,
         {
             method: "GET",
             headers: {

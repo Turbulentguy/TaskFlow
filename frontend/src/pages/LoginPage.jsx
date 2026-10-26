@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg'
-import RegisterPage from '../pages/RegisterPage.jsx'
-import DashboardPage from '../pages/DashBoardPage.jsx'
-import { loginUser } from '../services/authservice.js'
-import '../pages/LoginPage.css'
+import { useState } from 'react';
+import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg';
+
+import '../pages/LoginPage.css';
+
+import RegisterPage from '../pages/RegisterPage.jsx';
+import DashboardPage from '../pages/DashBoardPage.jsx';
+import { loginUser } from '../services/authservice.js';
 
 function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);

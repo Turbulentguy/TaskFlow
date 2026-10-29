@@ -46,4 +46,49 @@ async function createProject(user, form) {
     return data;
 }
 
-export { getProjects, createProject }
+async function editProject(user, project_id, form) {
+    const response = await fetch(
+        `${API_URL}/projects/${project_id}`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "Application/json",
+                "Authorization": `Bearer ${user.access_token}`
+            },
+            body: JSON.stringify({
+                name: form.name,
+                description: form.description
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.detail);
+    }
+
+    return data;
+}
+
+async function deleteProject(user, project_id) {
+    const response = await fetch(
+        `${API_URL}/project/${project_id}`,
+        {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "Application/json",
+                "Authorization": `Bearer ${user.access_token}`
+            }
+        }
+    )
+
+    if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail);
+    }
+
+    return true;
+}
+
+export { getProjects, createProject, editProject, deleteProject }

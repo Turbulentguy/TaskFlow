@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.core.dependencies import get_db, get_current_user
 from app.schema.project import ProjectCreateRequest, ProjectCreateResponse, GetProjectsResponse
 
 from app.models.user import User
 from app.models.project import Project
+from app.models.members import ProjectMember
 
 router = APIRouter(
     prefix = "/api/v1",
@@ -38,7 +40,14 @@ def getProjects(
     db: Session = Depends(get_db),
 ):
     query = db.query(Project).filter(
-        Project.owner_id == current_user.id
+        or_(
+            Project.owner_id == current_user.id,
+            Project.id.in_(
+                db.query(ProjectMember.project_id).filter(
+                    ProjectMember.user_id == current_user.id
+                )
+            )
+        )
     )
 
     total = query.count()

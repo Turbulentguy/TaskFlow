@@ -5,8 +5,9 @@ import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Plus, Search,
 import '../pages/DashBoardPage.css';
 import '../pages/ProjectPage.css';
 
-import DashboardPage from '../pages/DashBoardPage.jsx';
+import DashboardPage from './DashBoardPage.jsx';
 import LoginPage from "./LoginPage.jsx";
+import SettingsPage from "./SettingsPage.jsx";
 
 import { getProjects, createProject, editProject, deleteProject } from "../services/projectservice.js";
 import { getMembers, addMember, updateMember, deleteMember } from "../services/memberservice.js";
@@ -14,13 +15,15 @@ import { getMembers, addMember, updateMember, deleteMember } from "../services/m
 function ProjectPage({ user }) {
     const [isDashboard, setIsDashboard] = useState(false);
     const [isLogin, setIsLogin] = useState(false);
-    const [addProject, setIsAddProject] = useState(false);
+    const [isSettings, setIsSettings] = useState(false);
 
+    const [addProject, setIsAddProject] = useState(false);
     const [activeMenuId, setActiveMenuId] = useState(null);
     const [manageMember, setManageMember] = useState(null);
     const [activeMemberMenuId, setActiveMemberMenuId] = useState(null);
     const [editProjectDetail, setEditProjectDetail] = useState(null);
     const [deleteProjectDetail, setDeleteProjectDetail] = useState(null);
+
     const [search, setSearch] = useState('');
 
     const [form, setForm] = useState({
@@ -273,6 +276,10 @@ function ProjectPage({ user }) {
         return <DashboardPage user={user}/>
     }
 
+    if (isSettings) {
+        return <SettingsPage user={user} setUser={setUser}/>
+    }
+
     if (isLogin) {
         return <LoginPage />
     }
@@ -299,7 +306,7 @@ function ProjectPage({ user }) {
                         <SquareCheck size={40} color="white"/>
                         <span>My Tasks</span>
                     </p>
-                    <p className="side-bar-menu-selections">
+                    <p className="side-bar-menu-selections" onClick={() => {setIsSettings(true)}}>
                         <Settings size={40} color="white"/>
                         <span>Settings</span>
                     </p>

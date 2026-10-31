@@ -2,14 +2,18 @@ import { useState, useEffect } from "react"
 import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg'
 import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2 } from 'lucide-react'
 
-import LoginPage from '../pages/LoginPage'
-import ProjectPage from '../pages/ProjectPage'
 import '../pages/DashBoardPage.css'
+
+import ProjectPage from "./ProjectPage.jsx"
+import LoginPage from "./LoginPage.jsx";
+import SettingsPage from "./SettingsPage.jsx";
+
 import { getDashboard } from '../services/dashboardservice.js'
 
-function DashboardPage({ user }) {
+function DashboardPage({ user, setUser }) {
     const [isLogin, setIsLogin] = useState(false);
     const [isProject, setIsProject] = useState(false);
+    const [isSettings, setIsSettings] = useState(false);
     const [statisticDashboard, setStatisticDashboard] = useState(null);
 
     useEffect(() => {
@@ -31,6 +35,10 @@ function DashboardPage({ user }) {
 
     if (isProject) {
         return <ProjectPage user={user}/>
+    }
+
+    if (isSettings) {
+        return <SettingsPage user={user} setUser={setUser}/>
     }
 
     return (
@@ -55,7 +63,7 @@ function DashboardPage({ user }) {
                         <SquareCheck size={40} color="white"/>
                         <span>My Tasks</span>
                     </p>
-                    <p className="side-bar-menu-selections">
+                    <p className="side-bar-menu-selections" onClick={() => {setIsSettings(true)}}>
                         <Settings size={40} color="white"/>
                         <span>Settings</span>
                     </p>

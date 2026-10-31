@@ -48,7 +48,7 @@ function LoginPage() {
   }
 
   if (isDashboard) {
-    return <DashboardPage user={user}/>
+    return <DashboardPage user={user} setUser={setUser}/>
   }
 
   return (

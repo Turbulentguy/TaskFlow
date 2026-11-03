@@ -120,6 +120,18 @@ function MyTaskPage({ user, setUser }) {
         }
     }
 
+    const currentMember = members.find(
+        (member) => member.user_id === user.id
+    );
+
+    const isAdmin = ["Owner", "Admin"].includes(currentMember?.role);
+
+    const availableAssignees = isAdmin
+        ? members
+        : members.filter(
+            (member) => member.user_id === user.id
+        );
+
     if (isDashboard) {
         return <DashboardPage user={user} setUser={setUser}/>
     }
@@ -337,7 +349,7 @@ function MyTaskPage({ user, setUser }) {
                                         value={selectedProjectId} 
                                         onChange={(event) => {
                                             setSelectedProjectId(event.target.value);
-                                            
+
                                             setTaskForm((previousForm) => ({
                                                 ...previousForm,
                                                 assignee_id: ''
@@ -368,7 +380,7 @@ function MyTaskPage({ user, setUser }) {
                                         onChange={handleAddTaskChange}>
                                         <option value="">Assign to...</option>
                                         {
-                                            members.map((member) => 
+                                            availableAssignees.map((member) => 
                                                 <option key={member.user_id} value={member.user_id}>
                                                     {member.name}
                                                 </option>

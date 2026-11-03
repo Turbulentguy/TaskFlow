@@ -6,16 +6,18 @@ import '../pages/DashBoardPage.css';
 import '../pages/ProjectPage.css';
 
 import DashboardPage from './DashBoardPage.jsx';
-import LoginPage from "./LoginPage.jsx";
+import MyTaskPage from "./MyTaskPage.jsx";
 import SettingsPage from "./SettingsPage.jsx";
+import LoginPage from "./LoginPage.jsx";
 
 import { getProjects, createProject, editProject, deleteProject } from "../services/projectservice.js";
 import { getMembers, addMember, updateMember, deleteMember } from "../services/memberservice.js";
 
-function ProjectPage({ user }) {
+function ProjectPage({ user, setUser }) {
     const [isDashboard, setIsDashboard] = useState(false);
-    const [isLogin, setIsLogin] = useState(false);
+    const [isMyTask, setIsMyTask] = useState(false)
     const [isSettings, setIsSettings] = useState(false);
+    const [isLogin, setIsLogin] = useState(false);
 
     const [addProject, setIsAddProject] = useState(false);
     const [activeMenuId, setActiveMenuId] = useState(null);
@@ -276,6 +278,10 @@ function ProjectPage({ user }) {
         return <DashboardPage user={user}/>
     }
 
+    if (isMyTask) {
+        return <MyTaskPage user={user} setUser={setUser}/>
+    }
+
     if (isSettings) {
         return <SettingsPage user={user} setUser={setUser}/>
     }
@@ -302,7 +308,7 @@ function ProjectPage({ user }) {
                         <Folder size={40} color="white"/>
                         <span>Projects</span>
                     </p>
-                    <p className="side-bar-menu-selections">
+                    <p className="side-bar-menu-selections" onClick={() => {setIsMyTask(true)}}>
                         <SquareCheck size={40} color="white"/>
                         <span>My Tasks</span>
                     </p>

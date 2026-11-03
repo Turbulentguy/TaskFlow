@@ -9,12 +9,14 @@ import '../pages/SettingsPage.css';
 import DashboardPage from "./DashBoardPage.jsx";
 import ProjectPage from "./ProjectPage.jsx";
 import LoginPage from "./LoginPage.jsx";
+import MyTaskPage from "./MyTaskPage.jsx";
 
 import { userRename, changePassword } from "../services/userservice.js";
 
 function SettingsPage({ user, setUser }) {
     const [isDashboard, setIsDashboard] = useState(false);
     const [isProject, setIsProject] = useState(false);
+    const [isMyTask, setIsMyTask] = useState(false);
     const [isLogin, setIsLogin] = useState(false);
 
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -126,147 +128,151 @@ function SettingsPage({ user, setUser }) {
         return <ProjectPage user={user}/>
     }
 
+    if (isMyTask) {
+        return <MyTaskPage user={user}/>
+    }
+
     if (isLogin) {
         return <LoginPage />
     }
 
     return (
         <div className="dashboard-layout">
-                    <div className="left-container">
-                        <div className="brand-container">
-                            <img src={logo} alt="Logo" className="logo-dashboard"/>
-                            <p className="brand-dashboard">
-                                Jiraiya
-                            </p>
-                        </div>
-                        <div className="side-bar-menu">
-                            <p className="side-bar-menu-selections" onClick={() => {setIsDashboard(true)}}>
-                                <House size={40} color="white"/>
-                                <span>Dashboard</span>
-                            </p>
-                            <p className="side-bar-menu-selections" onClick={() => {setIsProject(true)}}>
-                                <Folder size={40} color="white"/>
-                                <span>Projects</span>
-                            </p>
-                            <p className="side-bar-menu-selections">
-                                <SquareCheck size={40} color="white"/>
-                                <span>My Tasks</span>
-                            </p>
-                            <p className="side-bar-menu-selections-settings">
-                                <Settings size={40} color="white"/>
-                                <span>Settings</span>
-                            </p>
-                            <p className="side-bar-menu-selections logout-selection" onClick={() => {setIsLogin(true)}}>
-                                <LogOut size={40} color="white"/>
-                                <span>Log Out</span>
-                            </p>
-                        </div>
+            <div className="left-container">
+                <div className="brand-container">
+                    <img src={logo} alt="Logo" className="logo-dashboard"/>
+                    <p className="brand-dashboard">
+                        Jiraiya
+                    </p>
+                </div>
+                <div className="side-bar-menu">
+                    <p className="side-bar-menu-selections" onClick={() => {setIsDashboard(true)}}>
+                        <House size={40} color="white"/>
+                        <span>Dashboard</span>
+                    </p>
+                    <p className="side-bar-menu-selections" onClick={() => {setIsProject(true)}}>
+                        <Folder size={40} color="white"/>
+                        <span>Projects</span>
+                    </p>
+                    <p className="side-bar-menu-selections" onClick={() => {setIsMyTask(true)}}>
+                        <SquareCheck size={40} color="white"/>
+                        <span>My Tasks</span>
+                    </p>
+                    <p className="side-bar-menu-selections-settings">
+                        <Settings size={40} color="white"/>
+                        <span>Settings</span>
+                    </p>
+                    <p className="side-bar-menu-selections logout-selection" onClick={() => {setIsLogin(true)}}>
+                        <LogOut size={40} color="white"/>
+                        <span>Log Out</span>
+                    </p>
+                </div>
+            </div>
+            <div className="right-container">
+                <div className="nav-bar-menu">
+                    <div className="nav-bar-profile">
+                        <CircleUser size={70} color="grey"/>
+                        <span>{user?.name ?? "User"}</span>
                     </div>
-                    <div className="right-container">
-                        <div className="nav-bar-menu">
-                            <div className="nav-bar-profile">
-                                <CircleUser size={70} color="grey"/>
-                                <span>{user?.name ?? "User"}</span>
-                            </div>
-                        </div>
-                        <div className="main-dashboard">
-                            <div className="settings-page-container">
-                                <p className="settings-page-header-title">
-                                    Settings
-                                </p>
-                                <p className="settings-page-header-subtitle">
-                                    Manage your account and keep your workspace secure
-                                </p>
-                                <form onSubmit={handleUserSubmit} className="account-information-container">
-                                        <User2 size={250} strokeWidth={0.5} className="account-information-logo"/>
-                                        <div className="account-information-subcontainer">
-                                            <p className="account-information-header-title">
-                                                Account Information
-                                            </p>
-                                            <p className="account-information-header-subtitle">
-                                                Update your display name
-                                            </p>
-                                            <div className="account-information-edit-container">
-                                                <p className="account-information-name">
-                                                    Name
-                                                </p>
-                                                <input type="text" className="account-information-input" placeholder={user.name} name="name" value={userForm.name} onChange={handleUserChange}/>
-                                            </div>
-                                        </div>
-                                    <button className="account-information-save-change-button">
-                                        <Check size={40} color="white"/>
-                                        Save Changes
-                                    </button>
-                                </form>
-                                <form className="change-password-container" onSubmit={handlePasswordSubmit}>
-                                    <Lock size={80} strokeWidth={1.5} className="change-password-logo"/>
-                                    <div className="change-password-subcontainer">
-                                        <p className="change-password-header-title">
-                                            Change Password
+                </div>
+                <div className="main-dashboard">
+                    <div className="settings-page-container">
+                        <p className="settings-page-header-title">
+                            Settings
+                        </p>
+                        <p className="settings-page-header-subtitle">
+                            Manage your account and keep your workspace secure
+                        </p>
+                        <form onSubmit={handleUserSubmit} className="account-information-container">
+                                <User2 size={250} strokeWidth={0.5} className="account-information-logo"/>
+                                <div className="account-information-subcontainer">
+                                    <p className="account-information-header-title">
+                                        Account Information
+                                    </p>
+                                    <p className="account-information-header-subtitle">
+                                        Update your display name
+                                    </p>
+                                    <div className="account-information-edit-container">
+                                        <p className="account-information-name">
+                                            Name
                                         </p>
-                                        <p className="change-password-header-subtitle">
-                                            Keep your account secure with <u>a new password</u>
-                                        </p>
-                                        <div className="current-password-container">
-                                            <p className="current-password-title">
-                                                Current Password
-                                            </p>
-                                            <div className="current-password-input-container">
-                                                <input 
-                                                    type={showCurrentPassword ? "text" : "password"}
-                                                    className="current-password-input" 
-                                                    placeholder="Enter current password" 
-                                                    name="current_password" 
-                                                    value={passwordForm.current_password} 
-                                                    onChange={handlePasswordChange}/>
-                                                <button type="button" className="password-toggle-button" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
-                                                    {showCurrentPassword ? <EyeOff /> : <Eye />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="new-password-container">
-                                            <p className="new-password-title">
-                                                New Password
-                                            </p>
-                                            <div className="new-password-input-container">
-                                                <input 
-                                                    type={showNewPassword ? "text" : "password"}
-                                                    className="new-password-input" 
-                                                    placeholder="Enter new password" 
-                                                    name="new_password" 
-                                                    value={passwordForm.new_password} 
-                                                    onChange={handlePasswordChange}/>
-                                                <button type="button" className="password-toggle-button" onClick={() => setShowNewPassword(!showNewPassword)}>
-                                                    {showNewPassword ? <EyeOff /> : <Eye />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="confirm-password-container">
-                                            <p className="confirm-password-title">
-                                               <u>Confirm Password</u>
-                                            </p>
-                                            <div className="confirm-password-input-container">
-                                                <input 
-                                                    type={showConfirmPassword ? "text" : "password"}
-                                                    className="confirm-new-password-input" 
-                                                    placeholder="Enter new password" 
-                                                    name="new_password_confirmation" 
-                                                    value={passwordForm.new_password_confirmation} 
-                                                    onChange={handlePasswordChange}/>
-                                                <button type="button" className="password-toggle-button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                                    {showConfirmPassword ? <EyeOff /> : <Eye />}
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <input type="text" className="account-information-input" placeholder={user.name} name="name" value={userForm.name} onChange={handleUserChange}/>
                                     </div>
-                                    <button className="update-password-button" type="submit">
-                                        <LockKeyhole size={40}/>
-                                        Update Password
-                                    </button>
-                                </form>
+                                </div>
+                            <button className="account-information-save-change-button">
+                                <Check size={40} color="white"/>
+                                Save Changes
+                            </button>
+                        </form>
+                        <form className="change-password-container" onSubmit={handlePasswordSubmit}>
+                            <Lock size={80} strokeWidth={1.5} className="change-password-logo"/>
+                            <div className="change-password-subcontainer">
+                                <p className="change-password-header-title">
+                                    Change Password
+                                </p>
+                                <p className="change-password-header-subtitle">
+                                    Keep your account secure with <u>a new password</u>
+                                </p>
+                                <div className="current-password-container">
+                                    <p className="current-password-title">
+                                        Current Password
+                                    </p>
+                                    <div className="current-password-input-container">
+                                        <input 
+                                            type={showCurrentPassword ? "text" : "password"}
+                                            className="current-password-input" 
+                                            placeholder="Enter current password" 
+                                            name="current_password" 
+                                            value={passwordForm.current_password} 
+                                            onChange={handlePasswordChange}/>
+                                        <button type="button" className="password-toggle-button" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                                            {showCurrentPassword ? <EyeOff /> : <Eye />}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="new-password-container">
+                                    <p className="new-password-title">
+                                        New Password
+                                    </p>
+                                    <div className="new-password-input-container">
+                                        <input 
+                                            type={showNewPassword ? "text" : "password"}
+                                            className="new-password-input" 
+                                            placeholder="Enter new password" 
+                                            name="new_password" 
+                                            value={passwordForm.new_password} 
+                                            onChange={handlePasswordChange}/>
+                                        <button type="button" className="password-toggle-button" onClick={() => setShowNewPassword(!showNewPassword)}>
+                                            {showNewPassword ? <EyeOff /> : <Eye />}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="confirm-password-container">
+                                    <p className="confirm-password-title">
+                                        <u>Confirm Password</u>
+                                    </p>
+                                    <div className="confirm-password-input-container">
+                                        <input 
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            className="confirm-new-password-input" 
+                                            placeholder="Confirm new password" 
+                                            name="new_password_confirmation" 
+                                            value={passwordForm.new_password_confirmation} 
+                                            onChange={handlePasswordChange}/>
+                                        <button type="button" className="password-toggle-button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                            {showConfirmPassword ? <EyeOff /> : <Eye />}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <button className="update-password-button" type="submit">
+                                <LockKeyhole size={40}/>
+                                Update Password
+                            </button>
+                        </form>
                     </div>
+                </div>
+            </div>
         </div>         
     )
 }

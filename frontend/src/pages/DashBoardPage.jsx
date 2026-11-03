@@ -4,16 +4,19 @@ import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8
 
 import '../pages/DashBoardPage.css'
 
-import ProjectPage from "./ProjectPage.jsx"
-import LoginPage from "./LoginPage.jsx";
+import ProjectPage from "./ProjectPage.jsx";
+import MyTaskPage from "./MyTaskPage.jsx";
 import SettingsPage from "./SettingsPage.jsx";
+import LoginPage from "./LoginPage.jsx";
 
-import { getDashboard } from '../services/dashboardservice.js'
+import { getDashboard } from '../services/dashboardservice.js';
 
 function DashboardPage({ user, setUser }) {
-    const [isLogin, setIsLogin] = useState(false);
     const [isProject, setIsProject] = useState(false);
+    const [isMyTask, setIsMyTask] = useState(false);
     const [isSettings, setIsSettings] = useState(false);
+    const [isLogin, setIsLogin] = useState(false);
+    
     const [statisticDashboard, setStatisticDashboard] = useState(null);
 
     useEffect(() => {
@@ -35,6 +38,10 @@ function DashboardPage({ user, setUser }) {
 
     if (isProject) {
         return <ProjectPage user={user}/>
+    }
+
+    if (isMyTask) {
+        return <MyTaskPage user={user} setUser={setUser}/>
     }
 
     if (isSettings) {
@@ -59,7 +66,7 @@ function DashboardPage({ user, setUser }) {
                         <Folder size={40} color="white"/>
                         <span>Projects</span>
                     </p>
-                    <p className="side-bar-menu-selections">
+                    <p className="side-bar-menu-selections" onClick={() => {setIsMyTask(true)}}>
                         <SquareCheck size={40} color="white"/>
                         <span>My Tasks</span>
                     </p>

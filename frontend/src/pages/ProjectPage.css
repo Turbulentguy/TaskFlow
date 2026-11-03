@@ -56,7 +56,8 @@
     color: transparent;
 }
 
-.new-project-button {
+.new-project-button,
+.new-task-button {
     width: 200px;
     height: 50px;
 
@@ -193,7 +194,8 @@
     font-size: 24px;
 }
 
-.create-project-overlay {
+.create-project-overlay,
+.create-task-overlay {
     position: fixed;
     inset: 0;
 
@@ -208,7 +210,8 @@
     z-index: 1000;
 }
 
-.create-project-popup {
+.create-project-popup,
+.create-task-popup {
     display: flex;
     flex-direction: column;
 
@@ -224,7 +227,8 @@
     max-height: calc(100vh - 20px);
 }
 
-.create-project-container {
+.create-project-container,
+.create-task-container {
     display: flex;
     flex-direction: column;
 

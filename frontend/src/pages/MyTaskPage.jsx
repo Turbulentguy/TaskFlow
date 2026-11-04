@@ -13,7 +13,7 @@ import SettingsPage from "./SettingsPage.jsx";
 import LoginPage from "./LoginPage.jsx";
 
 import { getDashboard } from '../services/dashboardservice.js';
-import { createTask } from "../services/taskservice.js";
+import { createTask, getTasks } from "../services/taskservice.js";
 import { getProjects } from "../services/projectservice.js";
 import { getMembers } from "../services/memberservice.js";
 
@@ -25,6 +25,7 @@ function MyTaskPage({ user, setUser }) {
 
     const [projects, setProjects] = useState([]);
     const [members, setMembers] = useState([]);
+    const [tasks, setTasks] = useState([]);
 
     const [selectedProjectId, setSelectedProjectId] = useState('');
 
@@ -81,6 +82,19 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchProjectMembers();
+    }, [user, selectedProjectId]);
+
+    useEffect(() => {
+        async function fetchTasks() {
+            try {
+                const data = await getTasks(user, selectedProjectId);
+                setTasks(data.items ?? []);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        fetchTasks();
     }, [user, selectedProjectId]);
 
     function handleAddTaskChange(event) {
@@ -300,6 +314,33 @@ function MyTaskPage({ user, setUser }) {
                                         {statisticDashboard?.done_tasks}
                                     </div>
                                 </button>
+                            </div>
+                            <div className="tasks-section">
+                                <div className="tasks-section-header-container">
+                                    <p className="tasks-section-header-task">
+                                        Task
+                                    </p>
+                                    <p className="tasks-section-header-project">
+                                        Project
+                                    </p>
+                                    <p className="tasks-section-header-assignee">
+                                        Assignee
+                                    </p>
+                                    <p className="tasks-section-header-priority">
+                                        Priority
+                                    </p>
+                                    <p className="tasks-section-header-due-date">
+                                        Due Date
+                                    </p>
+                                    <p className="tasks-section-header-status">
+                                        Status
+                                    </p>
+                                </div>
+                                <div className="tasks-section-task-container">
+                                    <p className="tasks-section-title">
+                                        {tasks.title}
+                                    </p>
+                                </div>
                             </div>
                     </div>
                 </div>

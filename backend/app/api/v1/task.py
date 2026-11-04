@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 
 from app.core.dependencies import get_db, get_current_user
-from app.schema.task import TaskCreateRequest, TaskCreateResponse, TaskGetResponse, TaskUpdateRequest
+from app.schema.task import TaskCreateRequest, TaskCreateResponse, TaskGetResponse, TaskUpdateRequest, TasksResponse
 
 from app.models.user import User
 from app.models.task import Task
@@ -159,6 +159,19 @@ def getTasks(
         "total": total,
         "page": page,
         "page_size": limit
+    }
+
+@router.get("/tasks/me", response_model = TasksResponse)
+def getMyTasks(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    queryTask = db.query(Task).filter(
+        Task.assignee_id == current_user.id
+    ).all()
+
+    return {
+        "items": queryTask
     }
 
 @router.patch("/tasks/{task_id}", response_model = TaskCreateResponse)

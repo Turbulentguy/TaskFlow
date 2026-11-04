@@ -26,6 +26,9 @@ class TaskCreateResponse(BaseModel):
     class Config():
         from_attributes = True
 
+class TasksResponse(BaseModel):
+    items: list[TaskCreateResponse]
+
 class TaskGetResponse(BaseModel):
     items: list[TaskCreateResponse]
     total: int

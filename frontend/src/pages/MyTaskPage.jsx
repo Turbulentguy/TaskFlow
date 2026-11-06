@@ -36,6 +36,7 @@ function MyTaskPage({ user, setUser }) {
     const [editTaskDetail, setEditTaskDetail] = useState(null);
     const [deleteTaskDetail, setDeleteTaskDetail] = useState(null); 
     const [projectMembers, setProjectMembers] = useState({});
+    const [activeFilter, setActiveFilter] = useState("all")
 
     const [taskForm, setTaskForm] = useState({
         title: '',
@@ -289,6 +290,34 @@ function MyTaskPage({ user, setUser }) {
             (member) => member.user_id === user.id
         );
 
+    const filteredTasks = tasks.filter((task) => {
+        if (activeFilter === "all") {
+            return true;
+        }
+
+        if (activeFilter === "todo") {
+            return task.status === "todo";
+        }
+
+        if (activeFilter === "in_progress") {
+            return task.status === "in_progress"
+        }
+
+        if (activeFilter === "overdue") {
+            return (
+                task.status !== "done" &&
+                task.due_date &&
+                new Date(task.due_date) < new Date()
+            );
+        }
+
+        if(activeFilter === "done") {
+            return task.status === "done";
+        }
+
+        return true;
+    })
+
     if (isDashboard) {
         return <DashboardPage user={user} setUser={setUser}/>
     }
@@ -427,31 +456,31 @@ function MyTaskPage({ user, setUser }) {
                                 </div>
                             </div>
                             <div className="tasks-filter-container">
-                                <button className="tasks-filter-all">
+                                <button className={`tasks-filter-all ${activeFilter === "all" ? "active" : ""}`} onClick={() => setActiveFilter("all")}>
                                     All Tasks
                                     <div className="number-of-tasks-filter-all">
                                         {statisticDashboard?.total_tasks}
                                     </div>
                                 </button>
-                                <button className="tasks-filter-to-do">
+                                <button className={`tasks-filter-to-do ${activeFilter === "todo" ? "active" : ""}`} onClick={() => setActiveFilter("todo")}>
                                     To-do
                                     <div className="number-of-tasks-filter-to-do">
                                         {statisticDashboard?.todo_tasks}
                                     </div>
                                 </button>
-                                <button className="tasks-filter-in-progress">
+                                <button className={`tasks-filter-in-progress ${activeFilter === "in_progress" ? "active" : ""}`} onClick={() => setActiveFilter("in_progress")}>
                                     In Progress
                                     <div className="number-of-tasks-filter-in-progress">
                                         {statisticDashboard?.in_progress_tasks}
                                     </div>
                                 </button>
-                                <button className="tasks-filter-overdue">
+                                <button className={`tasks-filter-overdue ${activeFilter === "overdue" ? "active" : ""}`} onClick={() => setActiveFilter("overdue")}>
                                     Overdue
                                     <div className="number-of-tasks-filter-overdue">
                                         {statisticDashboard?.overdue_tasks}
                                     </div>
                                 </button>
-                                <button className="tasks-filter-done">
+                                <button className={`tasks-filter-done ${activeFilter === "done" ? "active" : ""}`} onClick={() => setActiveFilter("done")}>
                                     Done
                                     <div className="number-of-tasks-filter-done">
                                         {statisticDashboard?.done_tasks}
@@ -481,7 +510,7 @@ function MyTaskPage({ user, setUser }) {
                                 </div>
                                 <div className="tasks-section-tasks-container">
                                     {
-                                        tasks.map((task) => {
+                                        filteredTasks.map((task) => {
                                             const project = projects.find(
                                                 (project) => project.id === task.project_id
                                             );

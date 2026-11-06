@@ -150,7 +150,8 @@
 .select-task-project-title,
 .select-task-assignee-title,
 .select-task-priority-title,
-.select-task-due-date-title {
+.select-task-due-date-title,
+.select-task-status-title {
     font-family: 'Google Sans', sans-serif;
     font-size: 30px;
     font-weight: 700;
@@ -192,7 +193,8 @@
 .select-project-container,
 .select-assignee-container,
 .select-priority-container,
-.select-due-date-container {
+.select-due-date-container,
+.select-status-container {
     position: relative;
 
     display: flex;
@@ -224,7 +226,8 @@
 
 .select-project,
 .select-assignee,
-.select-priority {
+.select-priority,
+.select-status {
     flex: 1;
     min-width: 0;
     height: 100%;
@@ -293,7 +296,8 @@
     display: none;
 }
 
-.create-task-buttons {
+.create-task-buttons,
+.edit-task-buttons {
     display: flex;
     flex-direction: row;
 
@@ -302,7 +306,8 @@
     margin: 70px 40px 0 auto;
 }
 
-.create-task-cancel-button {
+.create-task-cancel-button,
+.edit-task-cancel-button {
     width: 150px;
     height: 70px;
 
@@ -317,13 +322,15 @@
     cursor: pointer;
 }
 
-.create-task-cancel-button:hover {
+.create-task-cancel-button:hover,
+.edit-task-cancel-button {
     color: white;
     background: grey;
     box-shadow: 0 4px 12px rgba(79, 0, 238, 0.25);
 }
 
-.create-task-create-task-button {
+.create-task-create-task-button,
+.edit-task-edit-task-button {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -346,8 +353,295 @@
     cursor: pointer;
 }
 
-.create-task-create-task-button:hover {
+.create-task-create-task-button:hover,
+.edit-task-edit-task-button:hover {
     background-color: #3d00bd;
     box-shadow: 0 4px 12px rgba(79, 0, 238, 0.25);
 }
 
+.tasks-section {
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 20px;
+}
+
+.tasks-section-header-container {
+    display: flex;
+    flex-direction: row;
+
+    width: 100%;
+
+    border: 1px solid lavender;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.tasks-section-header-task,
+.tasks-section-header-project,
+.tasks-section-header-assignee,
+.tasks-section-header-priority,
+.tasks-section-header-due-date,
+.tasks-section-header-status,
+.tasks-section-task-title,
+.tasks-section-task-description,
+.tasks-section-task-project,
+.tasks-section-task-assignee,
+.tasks-section-task-priority,
+.tasks-section-task-due-date,
+.tasks-section-task-status {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+
+    width: 120px;
+
+    padding-left: 40px;
+}
+
+.tasks-section-task-description {
+    color: grey;
+}
+
+.tasks-section-header-project,
+.tasks-section-header-assignee,
+.tasks-section-task-project,
+.tasks-section-task-assignee {
+    padding-left: 400px;
+}
+
+.tasks-section-header-priority,
+.tasks-section-task-priority {
+    padding-left: 300px;
+}
+
+.tasks-section-header-due-date,
+.tasks-section-task-due-date {
+    padding-left: 200px;
+}
+
+.tasks-section-header-status,
+.tasks-section-task-status {
+    padding-left: 200px;
+}
+
+.tasks-section-tasks-container {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+}
+
+.tasks-section-task-container {
+    position: relative;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    width: 100%;
+    
+    border: 1px solid lavender;
+}
+
+.three-dot-task {
+    position: relative;
+    margin: 0 40px 0 auto;
+
+    border: none;
+
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.task-features-container {
+    position: absolute;
+    right: 90px;
+
+    width: 200px;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: white;
+    border: 1px solid lavender;
+    border-radius: 8px;
+
+    padding: 10px;
+
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.task-features-edit-button,
+.task-features-change-status-button,
+.task-features-delete-task-button {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+
+    padding: 0 12px;
+
+    font-family: 'Google Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+
+    gap: 10px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    cursor: pointer;
+
+    transition: background-color 0.15s ease;
+}
+
+.task-features-delete-task-button {
+    color: red;
+}
+
+.task-features-edit-button:hover,
+.task-features-change-status-button:hover {
+    color: white;
+    background-color: gray;
+}
+
+.task-features-delete-task-button:hover {
+    color: white;
+    background-color: red;
+}
+
+.task-title-header,
+.task-description-header {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+
+    margin-top: 20px;
+}
+
+.task-description-header {
+    margin-top: 20px;
+}
+
+.task-edit-title,
+.task-edit-description {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+
+    width: 87%;
+
+    border: 1px solid lavender;
+    border-radius: 8px;
+
+    padding: 30px;
+    margin-top: 0px;
+
+    outline: none;
+}
+
+.task-edit-description {
+    resize: none;
+
+    margin-bottom: 20px;
+}
+
+.task-edit-title:focus::placeholder,
+.task-edit-description:focus::placeholder {
+    color: transparent;
+}
+
+.edit-task-buttons {
+    margin: 50px 20px 0 auto;
+}
+
+.delete-task-popup {
+    display: flex;
+    flex-direction: column;
+
+    width: 900px;
+    height: 600px;
+
+    background: white;
+    
+    border: 1px solid lavender;
+    border-radius: 15px;
+
+    box-sizing: border-box;
+    max-height: calc(100vh - 20px);
+}
+
+.delete-task-container {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+}
+
+.delete-task-icon {
+    margin-top: 50px;
+}
+
+.delete-task-delete-popup-title {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 40px;
+    font-weight: 900;
+}
+
+.delete-task-delete-popup-subtitle {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 35px;
+
+    text-align: center;
+
+    margin-top: 0px;
+}
+
+.delete-task-buttons {
+    display: flex;
+    flex-direction: row;
+
+    justify-content: center;
+
+    gap: 10px;
+    
+    margin-top: 30px;
+}
+
+.delete-task-cancel-button,
+.delete-task-delete-button {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+
+    width: 40%;
+
+    border: 1px solid lavender;
+    border-radius: 15px;
+
+    padding: 20px 0 20px 0;
+
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.delete-task-delete-button {
+    color: white;
+    background-color: red;
+}
+
+.delete-task-cancel-button:hover {
+    color: white;
+    background-color: grey;
+}
+
+.delete-task-delete-button:hover {
+    color: red;
+    background-color: white;
+}

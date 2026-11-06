@@ -224,6 +224,13 @@ def updateTask(
             detail = "Access denied."
         )
 
+    if not (is_owner or is_admin):
+        if queryTask.assignee_id != current_user.id or queryTask.created_by != current_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied."
+            )
+
     if task.due_date is not None and task.due_date.date() < date.today():
         raise HTTPException(
             status_code = 422,

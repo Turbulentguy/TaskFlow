@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg';
-import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2, Plus, X, ChevronDown, Users, Flag, CalendarDays } from "lucide-react";
+import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2, Plus, X, ChevronDown, Users, Flag, CalendarDays, MoreVertical, Pencil, RefreshCcw, Trash } from "lucide-react";
 
 import '../pages/DashBoardPage.css';
 import '../pages/ProjectPage.css';
@@ -13,7 +13,7 @@ import SettingsPage from "./SettingsPage.jsx";
 import LoginPage from "./LoginPage.jsx";
 
 import { getDashboard } from '../services/dashboardservice.js';
-import { createTask, getTasks } from "../services/taskservice.js";
+import { createTask, getTasks, updateTask, deleteTask } from "../services/taskservice.js";
 import { getProjects } from "../services/projectservice.js";
 import { getMembers } from "../services/memberservice.js";
 
@@ -25,12 +25,17 @@ function MyTaskPage({ user, setUser }) {
 
     const [projects, setProjects] = useState([]);
     const [members, setMembers] = useState([]);
+    const [allMembers, setAllMembers] = useState([]);
     const [tasks, setTasks] = useState([]);
 
     const [selectedProjectId, setSelectedProjectId] = useState('');
 
     const [addTaskPopup, setAddTaskPopup] = useState(false);
     const [statisticDashboard, setStatisticDashboard] = useState(null);
+    const [activeTaskMenu, setActiveTaskMenu] = useState(null);
+    const [editTaskDetail, setEditTaskDetail] = useState(null);
+    const [deleteTaskDetail, setDeleteTaskDetail] = useState(null); 
+    const [projectMembers, setProjectMembers] = useState({});
 
     const [taskForm, setTaskForm] = useState({
         title: '',
@@ -38,7 +43,16 @@ function MyTaskPage({ user, setUser }) {
         priority: 'Medium',
         assignee_id: '',
         due_date: ''
-    })
+    });
+
+    const [editTaskForm, setEditTaskForm] = useState({
+        title: '',
+        description: '',
+        priority: '',
+        status: '',
+        assignee_id: '',
+        due_date: ''
+    });
 
     useEffect(() => {
         async function fetchDashboard() {
@@ -85,9 +99,46 @@ function MyTaskPage({ user, setUser }) {
     }, [user, selectedProjectId]);
 
     useEffect(() => {
+        async function fetchAllMembers() {
+            try {
+                const results = await Promise.all(
+                    projects.map(async (project) => {
+                        const data = await getMembers(user, project.id);
+
+                        return {
+                            projectId: project.id,
+                            members: data.items ?? []
+                        };
+                    })
+                );
+
+                const memberMap = Object.fromEntries(
+                    results.map((result) => [
+                        result.projectId,
+                        result.members
+                    ])
+                );
+
+                setProjectMembers(memberMap);
+
+                setAllMembers(
+                    results.flatMap((result) => result.members)
+                );
+
+            } catch (error) {
+                alert(error.message);
+            }
+    }
+
+    if (projects.length > 0) {
+        fetchAllMembers();
+    }
+}, [user, projects]);
+
+    useEffect(() => {
         async function fetchTasks() {
             try {
-                const data = await getTasks(user, selectedProjectId);
+                const data = await getTasks(user);
                 setTasks(data.items ?? []);
             } catch (error) {
                 alert(error.message);
@@ -95,7 +146,7 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchTasks();
-    }, [user, selectedProjectId]);
+    }, [user]);
 
     function handleAddTaskChange(event) {
         const { name, value } = event.target;
@@ -110,11 +161,17 @@ function MyTaskPage({ user, setUser }) {
         event.preventDefault();
 
         try {
-            const data = await createTask(user, selectedProjectId, {
+            await createTask(user, selectedProjectId, {
                 ...taskForm,
                 assignee_id: taskForm.assignee_id || null,
                 due_date: taskForm.due_date || null
             });
+
+            const updatedTasks = await getTasks(user);
+            setTasks(updatedTasks.items ?? []);
+
+            const updatedDashboard = await getDashboard(user);
+            setStatisticDashboard(updatedDashboard);
 
             alert("Task created successfully");
 
@@ -128,6 +185,92 @@ function MyTaskPage({ user, setUser }) {
 
             setSelectedProjectId('');
             setAddTaskPopup(false);
+
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function handleEditTaskChange(event) {
+        const { name, value } = event.target;
+
+        setEditTaskForm((previousForm) => ({
+            ...previousForm,
+            [name]: value
+        }));
+    }
+
+    async function handleEditTaskSubmit(event) {
+        event.preventDefault();
+
+        try {
+            await updateTask(user, editTaskDetail.id, {
+                ...editTaskForm,
+                assignee_id: editTaskForm.assignee_id || null,
+                due_date: editTaskForm.due_date || null
+            });
+
+            const updatedTasks = await getTasks(user);
+            setTasks(updatedTasks.items ?? []);
+
+            const updatedDashboard = await getDashboard(user);
+            setStatisticDashboard(updatedDashboard);
+
+            alert("Task updated successfully");
+
+            setEditTaskDetail(null);
+
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function formatStatus(status) {
+        const statusLabels = {
+            todo: "To-do",
+            in_progress: "In Progress",
+            done: "Done"
+        };
+
+        return statusLabels[status] ?? status;
+    }
+
+    function canManageTask(task) {
+        const isAssignee =
+            String(task.assignee_id) === String(user.id);
+
+        const isCreator =
+            String(task.created_by) === String(user.id);
+
+        const currentProjectMember = projectMembers[task.project_id]?.find(
+            (member) => String(member.user_id) === String(user.id)
+        );
+
+        const isOwnerOrAdmin = ["Owner", "Admin"].includes(
+            currentProjectMember?.role
+        );
+
+        return isOwnerOrAdmin || (isAssignee && isCreator);
+    }
+
+    async function handleDeleteTask() {
+        if (!deleteTaskDetail) {
+            return;
+        }
+
+        try {
+            await deleteTask(user, deleteTaskDetail.id);
+
+            const updatedTasks = await getTasks(user);
+            setTasks(updatedTasks.items ?? []);
+
+            const updatedDashboard = await getDashboard(user);
+            setStatisticDashboard(updatedDashboard);
+
+            setDeleteTaskDetail(null);
+            setActiveTaskMenu(null);
+
+            alert("Task deleted successfully");
 
         } catch (error) {
             alert(error.message);
@@ -336,10 +479,84 @@ function MyTaskPage({ user, setUser }) {
                                         Status
                                     </p>
                                 </div>
-                                <div className="tasks-section-task-container">
-                                    <p className="tasks-section-title">
-                                        {tasks.title}
-                                    </p>
+                                <div className="tasks-section-tasks-container">
+                                    {
+                                        tasks.map((task) => {
+                                            const project = projects.find(
+                                                (project) => project.id === task.project_id
+                                            );
+
+                                            const assignee = allMembers.find(
+                                                (member) => member.user_id === task.assignee_id
+                                            );
+
+                                            return (
+                                                <div key={task.id} className="tasks-section-task-container">
+                                                    <div className="task-section-title-description-container">
+                                                        <p className="tasks-section-task-title">
+                                                            {task.title}
+                                                        </p>
+                                                        <p className="tasks-section-task-description">
+                                                            {task.description}
+                                                        </p>
+                                                    </div>
+                                                    <p className="tasks-section-task-project">
+                                                        {project?.name}
+                                                    </p>
+                                                    <p className="tasks-section-task-assignee">
+                                                        {assignee?.name ?? "Unassigned"}
+                                                    </p>
+                                                    <p className="tasks-section-task-priority">
+                                                        {task.priority}
+                                                    </p>
+                                                    <p className="tasks-section-task-due-date">
+                                                        {task.due_date 
+                                                            ? new Date(task.due_date).toLocaleDateString()
+                                                            : "No due date"
+                                                        }
+                                                    </p>
+                                                    <p className="tasks-section-task-status">
+                                                        {formatStatus(task.status)}
+                                                    </p>
+                                                    {canManageTask(task) && (
+                                                        <button className="three-dot-task" onClick={() => {
+                                                            setActiveTaskMenu(
+                                                                activeTaskMenu === task.id ? null : task.id
+                                                            )
+                                                        }}>
+                                                            <MoreVertical size={30}/>
+                                                        </button>
+                                                    )}
+                                                    {
+                                                        activeTaskMenu === task.id && (
+                                                            <div className="task-features-container">
+                                                                <button className="task-features-edit-button" onClick={() => {
+                                                                    setEditTaskDetail(task);
+                                                                    setSelectedProjectId(task.project_id);
+                                                                    setEditTaskForm({
+                                                                        title: task.title,
+                                                                        description: task.description ?? '',
+                                                                        status: task.status,
+                                                                        priority: task.priority,
+                                                                        assignee_id: task.assignee_id ?? '',
+                                                                        due_date: task.due_date ? String(task.due_date).slice(0, 10) : ''
+                                                                    });
+                                                                    setActiveTaskMenu(null)
+                                                                }}>
+                                                                    <Pencil /> Edit Task
+                                                                </button>
+                                                                <button className="task-features-delete-task-button" onClick={() => {
+                                                                    setDeleteTaskDetail(task);
+                                                                }}>
+                                                                    <Trash /> Delete Task
+                                                                </button>
+                                                            </div>
+                                                        )
+                                                    }
+                                                </div>
+                                            );
+                                        })
+                                    }
                                 </div>
                             </div>
                     </div>
@@ -419,7 +636,7 @@ function MyTaskPage({ user, setUser }) {
                                         name="assignee_id"
                                         value={taskForm.assignee_id}
                                         onChange={handleAddTaskChange}>
-                                        <option value="">Assign to...</option>
+                                        <option value="">Unassigned</option>
                                         {
                                             availableAssignees.map((member) => 
                                                 <option key={member.user_id} value={member.user_id}>
@@ -470,10 +687,10 @@ function MyTaskPage({ user, setUser }) {
                             </div>
                         </div>
                         <div className="create-task-buttons">
-                            <button className="create-task-cancel-button" onClick={() => {setAddTaskPopup(false)}}>
+                            <button type="button" className="create-task-cancel-button" onClick={() => {setAddTaskPopup(false)}}>
                                 Cancel
                             </button>
-                            <button className="create-task-create-task-button">
+                            <button type="submit" className="create-task-create-task-button">
                                 <Plus size={30}/>
                                 <span>Create Task</span>
                             </button>
@@ -481,6 +698,148 @@ function MyTaskPage({ user, setUser }) {
                     </form>
                 </div>
             </div>
+        )}
+
+        {editTaskDetail && (
+            <div className="create-project-overlay">
+                <div className="create-project-popup">
+                    <form className="create-project-container" onSubmit={handleEditTaskSubmit}>
+                        <div className="create-project-header-title-and-close">
+                            <p className="create-project-header-title">
+                                Edit Task
+                            </p>
+                            <X size={40} className="close" onClick={() => {setEditTaskDetail(null)}}/>
+                        </div>
+                        <p className="update-project-header-subtitle">
+                            Update your task details
+                        </p>
+                        <p className="task-title-header">
+                            Task Title
+                        </p>
+                        <input type="text" name="title" value={editTaskForm.title} onChange={handleEditTaskChange} className="task-edit-title" placeholder={editTaskDetail.title} required/>
+                        <p className="task-description-header">
+                            Description (Optional)
+                        </p>
+                        <textarea name="description" value={editTaskForm.description} onChange={handleEditTaskChange} className="task-edit-description" rows={3} placeholder={editTaskDetail.description}></textarea>
+                        <div className="create-task-project-assignee-container">
+                            <div className="create-task-assignee-container">
+                                <div className="select-task-assignee-title">
+                                    Assignee
+                                </div>
+                                <div className="select-assignee-container">
+                                    <Users size={30}/>
+                                    <select className="select-assignee"
+                                        name="assignee_id"
+                                        value={editTaskForm.assignee_id}
+                                        onChange={handleEditTaskChange}>
+                                        <option value="">Assign to...</option>
+                                        {
+                                            availableAssignees.map((member) => 
+                                                <option key={member.user_id} value={member.user_id}>
+                                                    {member.name}
+                                                </option>
+                                            )
+                                        }
+                                    </select>
+                                    <ChevronDown size={20} className="chevron-down"/>
+                                </div>
+                            </div>
+                            <div className="create-task-status-container">
+                                <div className="select-task-status-title">
+                                    Status
+                                </div>
+                                <div className="select-status-container">
+                                    <RefreshCcw size={30}/>
+                                    <select
+                                        className="select-status"
+                                        name="status"
+                                        value={editTaskForm.status}
+                                        onChange={handleEditTaskChange}
+                                        required
+                                    >
+                                        <option value="todo">To-do</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="done">Done</option>
+                                    </select>
+                                    <ChevronDown size={20} className="chevron-down"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="create-task-priority-due-date-container">
+                            <div className="create-task-priority-container">
+                                <div className="select-task-priority-title">
+                                    Priority
+                                </div>
+                                <div className="select-priority-container">
+                                    <Flag size={30}/>
+                                    <select name="priority"
+                                        value={editTaskForm.priority}
+                                        onChange={handleEditTaskChange}
+                                        className="select-priority">
+                                        <option value="Low">Low</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="High">High</option>
+                                    </select>
+                                    <ChevronDown size={20} className="chevron-down"/>
+                                </div>
+                            </div>
+                            <div className="create-task-due-date-container">
+                                <div className="select-task-due-date-title">
+                                    Due Date
+                                </div>
+                                <div className="select-due-date-container">
+                                    <CalendarDays size={30}/>
+                                    <div className="due-date-input-wrapper">
+                                        <input type="date" 
+                                            name="due_date" 
+                                            value={editTaskForm.due_date} 
+                                            onChange={handleEditTaskChange} 
+                                            className="select-due-date"/>
+                                        <span className="due-date-placeholder">
+                                            Select due date...
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="edit-task-buttons">
+                                    <button type="button" className="edit-task-cancel-button" onClick={() => {setEditTaskDetail(null)}}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="edit-task-edit-task-button">
+                                        <Plus size={30}/>
+                                        <span>Edit Task</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        )}
+
+        {deleteTaskDetail && (
+            <div className="create-project-overlay">
+                <div className="delete-task-popup">
+                    <div className="delete-task-container">
+                        <Trash size={100} color="red" className="delete-task-icon"/>
+                        <p className="delete-task-delete-popup-title">
+                            Delete Task
+                        </p>
+                        <p className="delete-task-delete-popup-subtitle">
+                            Are you sure you want to delete
+                            <br className="delete-task-delete-popup-task"/>
+                            "{deleteTaskDetail.title}"?
+                        </p>
+                    </div>
+                    <div className="delete-task-buttons">
+                        <button type="button" className="delete-task-cancel-button" onClick={() => {setDeleteTaskDetail(null)}}>
+                            Cancel
+                        </button>
+                        <button type="submit" className="delete-task-delete-button" onClick={handleDeleteTask}>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>    
         )}
         </div>
     );

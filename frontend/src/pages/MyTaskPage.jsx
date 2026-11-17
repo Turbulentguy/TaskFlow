@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg';
-import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2, Plus, X, ChevronDown, Users, Flag, CalendarDays, MoreVertical, Pencil, RefreshCcw, Trash } from "lucide-react";
+import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2, Plus, X, ChevronDown, Users, Flag, CalendarDays, MoreVertical, Pencil, RefreshCcw, Trash, Search, MessageCircle, MessageCircleMore, User, Send } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 import '../pages/DashBoardPage.css';
 import '../pages/ProjectPage.css';
@@ -16,6 +17,7 @@ import { getDashboard } from '../services/dashboardservice.js';
 import { createTask, getTasks, updateTask, deleteTask } from "../services/taskservice.js";
 import { getProjects } from "../services/projectservice.js";
 import { getMembers } from "../services/memberservice.js";
+import { addComment, deleteComment, getComments, updateComment } from "../services/commentsservice.js";
 
 function MyTaskPage({ user, setUser }) {
     const [isDashboard, setIsDashboard] = useState(false);
@@ -27,7 +29,8 @@ function MyTaskPage({ user, setUser }) {
     const [members, setMembers] = useState([]);
     const [allMembers, setAllMembers] = useState([]);
     const [tasks, setTasks] = useState([]);
-
+    const [comments, setComments] = useState([]);
+ 
     const [selectedProjectId, setSelectedProjectId] = useState('');
 
     const [addTaskPopup, setAddTaskPopup] = useState(false);
@@ -36,7 +39,12 @@ function MyTaskPage({ user, setUser }) {
     const [editTaskDetail, setEditTaskDetail] = useState(null);
     const [deleteTaskDetail, setDeleteTaskDetail] = useState(null); 
     const [projectMembers, setProjectMembers] = useState({});
-    const [activeFilter, setActiveFilter] = useState("all")
+    const [activeFilter, setActiveFilter] = useState("all");
+    const [search, setSearch] = useState("");
+    const [activeComment, setActiveComment] = useState(null);
+    const [numComments, setNumComments] = useState(0);
+    const [activeCommentId, setActiveCommentId] = useState(null);
+    const [editCommentId, setEditCommentId] = useState(null);
 
     const [taskForm, setTaskForm] = useState({
         title: '',
@@ -53,6 +61,14 @@ function MyTaskPage({ user, setUser }) {
         status: '',
         assignee_id: '',
         due_date: ''
+    });
+
+    const [commentForm, setCommentForm] = useState({
+        content: ''
+    });
+
+    const [editCommentForm, setEditCommentForm] = useState({
+        content: ''
     });
 
     useEffect(() => {
@@ -131,10 +147,10 @@ function MyTaskPage({ user, setUser }) {
             }
     }
 
-    if (projects.length > 0) {
-        fetchAllMembers();
-    }
-}, [user, projects]);
+        if (projects.length > 0) {
+            fetchAllMembers();
+        }
+    }, [user, projects]);
 
     useEffect(() => {
         async function fetchTasks() {
@@ -148,6 +164,26 @@ function MyTaskPage({ user, setUser }) {
 
         fetchTasks();
     }, [user]);
+
+    useEffect(() => {
+        async function fetchComments() {
+            if (!activeComment?.id) {
+                setNumComments(0);
+                setComments([]);
+                return;
+            }
+
+            try {
+                const data = await getComments(user, activeComment.id);
+                setNumComments(data.total ?? 0);
+                setComments(data.items ?? []);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        fetchComments();
+    }, [user, activeComment?.id]);
 
     function handleAddTaskChange(event) {
         const { name, value } = event.target;
@@ -251,7 +287,15 @@ function MyTaskPage({ user, setUser }) {
             currentProjectMember?.role
         );
 
-        return isOwnerOrAdmin || (isAssignee && isCreator);
+        return isOwnerOrAdmin || isAssignee;
+    }
+
+    function canManageComment(task) {
+        const isMember = projectMembers[task.project_id]?.some(
+            (member) => String(member.user_id) === String(user.id)
+        );
+
+        return isMember;
     }
 
     async function handleDeleteTask() {
@@ -278,6 +322,88 @@ function MyTaskPage({ user, setUser }) {
         }
     }
 
+    async function handleCommentChange(event) {
+        const { name, value } = event.target;
+        
+        setCommentForm((previousDefault) => ({
+            ...previousDefault,
+            [name]: value
+        }));
+    }
+
+    async function handleCommentSubmit(event) {
+        event.preventDefault();
+
+        try {
+            await addComment(user, activeComment.id, commentForm);
+
+            setCommentForm({
+                content: ''
+            });
+
+            const data = await getComments(user, activeComment.id);
+
+            setComments(data.items ?? []);
+            setNumComments(data.total ?? 0);
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function handleEditCommentChange(event) {
+        const { name, value } = event.target;
+
+        setEditCommentForm((previousComment) => ({
+            ...previousComment,
+            [name]: value
+        }));
+    }
+
+    async function handleEditCommentSubmit(event) {
+        event.preventDefault();
+
+        try {
+            await updateComment(user, editCommentId, editCommentForm);
+
+            setComments((previousComments) =>
+                previousComments.map((comment) =>
+                    String(comment.id) === String(editCommentId)
+                        ? {
+                            ...comment,
+                            content: editCommentForm.content
+                        }
+                        : comment
+                )
+            );
+
+            setEditCommentId(null);
+            setEditCommentForm({ content: '' });
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    async function handleDeleteCommentSubmit(commentId) {
+        try {
+            await deleteComment(user, commentId);
+
+            setComments((previousComments) =>
+                previousComments.filter(
+                    (comment) => String(comment.id) !== String(commentId)
+                )
+            );
+
+            setNumComments((previousCount) => previousCount - 1);
+
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function handleSearch(event) {
+        setSearch(event.target.value);
+    }
+
     const currentMember = members.find(
         (member) => member.user_id === user.id
     );
@@ -290,33 +416,36 @@ function MyTaskPage({ user, setUser }) {
             (member) => member.user_id === user.id
         );
 
+    const now = new Date();
+
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
     const filteredTasks = tasks.filter((task) => {
-        if (activeFilter === "all") {
-            return true;
-        }
+        const project = projects.find(
+            (project) => project.id === task.project_id
+        );
 
-        if (activeFilter === "todo") {
-            return task.status === "todo";
-        }
+        const searchText = search.trim().toLowerCase();
 
-        if (activeFilter === "in_progress") {
-            return task.status === "in_progress"
-        }
+        const matchesSearch =
+            (task.title ?? "").toLowerCase().includes(searchText) ||
+            (task.description ?? "").toLowerCase().includes(searchText) ||
+            (project?.name ?? "").toLowerCase().includes(searchText);
 
-        if (activeFilter === "overdue") {
-            return (
+        const matchesFilter =
+            activeFilter === "all" ||
+            (activeFilter === "todo" && task.status === "todo") ||
+            (activeFilter === "in_progress" && task.status === "in_progress") ||
+            (activeFilter === "done" && task.status === "done") ||
+            (
+                activeFilter === "overdue" &&
                 task.status !== "done" &&
                 task.due_date &&
-                new Date(task.due_date) < new Date()
+                task.due_date.slice(0, 10) < today
             );
-        }
 
-        if(activeFilter === "done") {
-            return task.status === "done";
-        }
-
-        return true;
-    })
+        return matchesSearch && matchesFilter;
+    });
 
     if (isDashboard) {
         return <DashboardPage user={user} setUser={setUser}/>
@@ -379,10 +508,16 @@ function MyTaskPage({ user, setUser }) {
                             <p className="greeting-dashboard">
                                 My Tasks
                             </p>
-                            <button className="new-task-button" onClick={() => {setAddTaskPopup(true)}}>
-                                <Plus size={30} color="white" />
-                                New Task
-                            </button>
+                            <div className="new-task-search-bar">
+                                <div className="task-search-container">
+                                    <Search size={30} color="black" className="search-icon"/>
+                                    <input type="text" className="task-search-bar" placeholder="Search tasks..." value={search} onChange={handleSearch}/>
+                                </div>
+                                <button className="new-task-button" onClick={() => {setAddTaskPopup(true)}}>
+                                    <Plus size={30} color="white" />
+                                    New Task
+                                </button>
+                            </div>
                         </div>
                         <p className="my-task-subtitle">
                             Track and manage your assigned tasks
@@ -495,6 +630,9 @@ function MyTaskPage({ user, setUser }) {
                                     <p className="tasks-section-header-project">
                                         Project
                                     </p>
+                                    <p className="task-section-header-created-by">
+                                        Created By
+                                    </p>
                                     <p className="tasks-section-header-assignee">
                                         Assignee
                                     </p>
@@ -519,6 +657,10 @@ function MyTaskPage({ user, setUser }) {
                                                 (member) => member.user_id === task.assignee_id
                                             );
 
+                                            const creator = allMembers.find(
+                                                (member) => member.user_id === task.created_by
+                                            );
+
                                             return (
                                                 <div key={task.id} className="tasks-section-task-container">
                                                     <div className="task-section-title-description-container">
@@ -531,6 +673,9 @@ function MyTaskPage({ user, setUser }) {
                                                     </div>
                                                     <p className="tasks-section-task-project">
                                                         {project?.name}
+                                                    </p>
+                                                    <p className="tasks-section-task-created-by">
+                                                        {creator?.name}
                                                     </p>
                                                     <p className="tasks-section-task-assignee">
                                                         {assignee?.name ?? "Unassigned"}
@@ -547,15 +692,26 @@ function MyTaskPage({ user, setUser }) {
                                                     <p className="tasks-section-task-status">
                                                         {formatStatus(task.status)}
                                                     </p>
-                                                    {canManageTask(task) && (
-                                                        <button className="three-dot-task" onClick={() => {
-                                                            setActiveTaskMenu(
-                                                                activeTaskMenu === task.id ? null : task.id
-                                                            )
-                                                        }}>
-                                                            <MoreVertical size={30}/>
-                                                        </button>
-                                                    )}
+                                                    <div className="task-buttons-container">
+                                                        {canManageComment(task) && (
+                                                            <button className="comment-button-task" onClick={() => {
+                                                                setActiveComment(
+                                                                    activeComment?.id === task.id ? null : task
+                                                                );
+                                                            }}>
+                                                                <MessageCircle size={30}/>
+                                                            </button>
+                                                        )}
+                                                        {canManageTask(task) && (
+                                                            <button className="three-dot-task" onClick={() => {
+                                                                setActiveTaskMenu(
+                                                                    activeTaskMenu === task.id ? null : task.id
+                                                                )
+                                                            }}>
+                                                                <MoreVertical size={30}/>
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     {
                                                         activeTaskMenu === task.id && (
                                                             <div className="task-features-container">
@@ -869,6 +1025,196 @@ function MyTaskPage({ user, setUser }) {
                     </div>
                 </div>
             </div>    
+        )}
+
+        {activeComment && (
+            <div className="create-project-overlay">
+                <div className="comments-popup">
+                    <div className="task-comments-header-container">
+                        <div className="task-comments-header">
+                            <MessageCircleMore size={40}/>
+                            <span>Task Comments</span>
+                            <X size={40} className="close-comments" onClick={() => {setActiveComment(null)}}/>
+                        </div>
+                    </div>
+                    <div className="task-comments-section">
+                        <div className="task-info-comments-container">
+                            <div className="task-comments-project-description">
+                                <p className="task-comments-project">
+                                    {activeComment.title}
+                                </p>
+                                <p className="task-comments-description">
+                                    {activeComment.description}
+                                </p>
+                                <div className="task-comments-project-container">
+                                    <Folder size={40} />
+                                    <p className="task-comments-project-title">
+                                        Project:
+                                    </p>
+                                    <p className="task-comments-project-project-name">
+                                        {projects.find((project) => String(project.id) === String(activeComment.project_id))?.name}
+                                    </p>
+                                </div>
+                                <div className="task-comments-assignee-container">
+                                    <User size={40} />
+                                    <p className="task-comments-assignee-title">
+                                        Assignee:
+                                    </p>
+                                    <p className="task-comments-project-assignee-name">
+                                        {allMembers.find((member) => String(member.user_id) === String(activeComment.assignee_id))?.name ?? "Unassigned"}
+                                    </p>
+                                </div>
+                                <div className="task-comments-priority-container">
+                                    <Flag size={40}/>
+                                    <p className="task-comments-priority-title">
+                                        Priority:
+                                    </p>
+                                    <p className="task-comments-project-priority">
+                                        {activeComment.priority}
+                                    </p>
+                                </div>
+                                <div className="task-comments-due-date-container">
+                                    <Clock size={40}/>
+                                    <p className="task-comments-due-date-title">
+                                        Due Date:
+                                    </p>
+                                    <p className="task-comments-project-due-date">
+                                        {activeComment.due_date
+                                            ? new Date(activeComment.due_date).toLocaleDateString("en-GB", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric"
+                                            })
+                                            : "No due date"
+                                        }
+                                    </p>
+                                </div>
+                                <div className="task-comments-status-container">
+                                    <CalendarDays size={40}/>
+                                    <p className="task-comments-status-title">
+                                        Status:
+                                    </p>
+                                    <p className="task-comments-project-status">
+                                        {activeComment.status}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <form className="comments-section" onSubmit={editCommentId !== null
+                                ? handleEditCommentSubmit
+                                : handleCommentSubmit
+                            }>
+                            <div className="number-of-comments">
+                                Comments ({numComments})
+                            </div>
+                            <div className="users-comments-container">
+                                {comments.map((comment) => {
+                                    const commentUser = allMembers.find(
+                                        (member) => String(member.user_id) === String(comment.user_id)
+                                    );
+
+                                    const isCommentOwner = String(comment.user_id) === String(user.id);
+                                
+                                    return (
+                                        <div key={comment.id} className="users-comments-name-comment">
+                                            <div className="users-comments-name-time-container">
+                                                <p className="users-comments-name">
+                                                    {commentUser?.name ?? "Unknown"}
+                                                </p>
+                                                <p className="users-comments-time">
+                                                    {formatDistanceToNow(new Date(comment.updated_at), {
+                                                        addSuffix: true
+                                                    })}
+                                                </p>
+                                            </div>
+                                            <div className="users-comments-content-container">
+                                                <p className="users-comments-comment">
+                                                    {comment.content}
+                                                </p>
+                                                {isCommentOwner && (
+                                                    <div className="comment-menu-wrapper">
+                                                        <button className="three-dot-comment" 
+                                                            type="button" 
+                                                            onClick={() => {setActiveCommentId(
+                                                                activeCommentId === comment.id ? null : comment.id
+                                                            )}}>
+                                                            <MoreVertical />
+                                                        </button>
+                                                        {activeCommentId === comment.id && (
+                                                            <div className="comment-buttons-container">
+                                                                <button className="edit-comment-button" 
+                                                                    type="button" 
+                                                                    onClick={() => {
+                                                                        setEditCommentId(comment.id)
+                                                                        setEditCommentForm({
+                                                                            content: comment.content
+                                                                        });
+
+                                                                        setActiveCommentId(null);
+                                                                    }}>
+                                                                        Edit Comment
+                                                                </button>
+                                                                <button className="delete-comment-button" 
+                                                                    type="button" onClick={() => {
+                                                                        setActiveCommentId(null);
+                                                                        handleDeleteCommentSubmit(comment.id);
+                                                                    }}>
+                                                                        Delete Comment
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            <div className="comments-submission-container">
+                                <textarea name="content" 
+                                    value={editCommentId !== null
+                                        ? editCommentForm.content
+                                        : commentForm.content
+                                    } 
+                                    onChange={editCommentId !== null
+                                        ? handleEditCommentChange
+                                        : handleCommentChange
+                                    } 
+                                    className="input-comment" 
+                                    placeholder={editCommentId !== null
+                                        ? "Edit your comment..."
+                                        : "Write a comment..."
+                                    }
+                                    rows={2} 
+                                    required></textarea>
+                                {editCommentId !== null ? (
+                                    <>
+                                        <div className="edit-comment-buttons">
+                                            <button type="button"
+                                                className="edit-comment-cancel-button"
+                                                onClick={() => {
+                                                    setEditCommentId(null);
+                                                    setEditCommentForm({content: ''})
+                                            }}>
+                                                Cancel
+                                            </button>
+
+                                            <button type="submit"
+                                                className="edit-comment-save-button">
+                                                Save Change
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <button type="submit" className="comment-submission-button">
+                                        <Send size={40}/>
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         )}
         </div>
     );

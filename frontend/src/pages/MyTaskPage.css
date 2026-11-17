@@ -34,8 +34,12 @@
     align-items: center;
 }
 
-.new-task-button {
+.new-task-search-bar {
+    display: flex;
+    flex-direction: row;
+
     margin-left: auto;
+    gap: 20px;
 }
 
 .my-task-subtitle {
@@ -379,6 +383,7 @@
 
 .tasks-section-header-task,
 .tasks-section-header-project,
+.task-section-header-created-by,
 .tasks-section-header-assignee,
 .tasks-section-header-priority,
 .tasks-section-header-due-date,
@@ -387,6 +392,7 @@
 .tasks-section-task-description,
 .tasks-section-task-project,
 .tasks-section-task-assignee,
+.tasks-section-task-created-by,
 .tasks-section-task-priority,
 .tasks-section-task-due-date,
 .tasks-section-task-status {
@@ -404,15 +410,23 @@
 }
 
 .tasks-section-header-project,
+.tasks-section-task-project {
+    padding-left: 300px;
+}
+
+.task-section-header-created-by,
+.tasks-section-task-created-by {
+    padding-left: 200px;
+}
+
 .tasks-section-header-assignee,
-.tasks-section-task-project,
 .tasks-section-task-assignee {
-    padding-left: 400px;
+    padding-left: 200px;
 }
 
 .tasks-section-header-priority,
 .tasks-section-task-priority {
-    padding-left: 300px;
+    padding-left: 200px;
 }
 
 .tasks-section-header-due-date,
@@ -444,10 +458,25 @@
     border: 1px solid lavender;
 }
 
-.three-dot-task {
+.task-buttons-container {
     position: relative;
-    margin: 0 40px 0 auto;
 
+    display: flex;
+    flex-direction: row;
+
+    gap: 40px;
+
+    margin: 0 40px 0 auto;
+}
+
+.three-dot-task {
+    border: none;
+
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.comment-button-task {
     border: none;
 
     background-color: transparent;
@@ -655,4 +684,394 @@
 .tasks-filter-container button.active div {
     background-color: rgb(79, 0, 238);
     color: white;
+}
+
+.task-search-container {
+    position: relative;
+    width: 500px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.task-search-bar {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+
+    padding-left: 40px;
+    padding-right: 12px;
+
+    font-family: 'Google Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: black;
+
+    border: 1px solid lavender;
+    border-radius: 8px;
+
+    margin-left: 5px;
+}
+
+.comments-popup {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    width: min(1500px, calc(100vw - 40px));
+    height: min(1000px, calc(100vh - 40px));
+
+    background: white;
+    border: 1px solid lavender;
+    border-radius: 15px;
+
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.task-comments-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+    min-height: 70px;
+    padding: 30px;
+
+    border-bottom: 1px solid lavender;
+    box-sizing: border-box;
+}
+
+.task-comments-header {
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 20px;
+}
+
+.task-comments-header span {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+}
+
+.close-comments {
+    margin-left: 1000px;
+    cursor: pointer;
+}
+
+.task-comments-section {
+    display: grid;
+    grid-template-columns: 3fr 5fr;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.task-info-comments-container {
+    border-right: 1px solid lavender;
+
+    padding: 25px;
+}
+
+.task-comments-project-description {
+    display: flex;
+    flex-direction: column;
+
+    margin-left: 30px;
+}
+
+.task-comments-project {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 50px;
+    font-weight: 700;
+
+    margin-bottom: 20px;
+}
+
+.task-comments-description {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 30px;
+    font-weight: 100;
+
+    color: grey;
+
+    border-bottom: 1px solid lavender;
+
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+.task-comments-project-container,
+.task-comments-assignee-container,
+.task-comments-priority-container,
+.task-comments-due-date-container,
+.task-comments-status-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    gap: 20px;
+}
+
+.task-comments-project-title,
+.task-comments-project-project-name,
+.task-comments-assignee-title,
+.task-comments-project-assignee-name,
+.task-comments-priority-title,
+.task-comments-project-priority,
+.task-comments-due-date-title,
+.task-comments-project-due-date,
+.task-comments-status-title,
+.task-comments-project-status {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+
+    width: 200px;
+}
+
+.task-comments-project-project-name {
+    color: rgb(79, 0, 238);
+}
+
+.comments-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.number-of-comments {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+
+    margin: 30px;
+}
+
+.comments-submission-container {
+    display: flex;
+    flex-direction: row;
+
+    gap: 15px;
+
+    margin: 20px 0 40px 40px;
+}
+
+.input-comment {
+    width: 80%;
+
+    font-family: 'Google Sans', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+
+    padding: 10px;
+
+    border: 1px solid lavender;
+    border-radius: 8px;
+
+    outline: none;
+    resize: none;
+}
+
+.input-comment:focus::placeholder {
+    color: transparent;
+}
+
+.comment-submission-button {
+    border: 1px solid lavender;
+    border-radius: 15px;
+
+    color: white;
+    background-color: rgb(79, 0, 238);
+
+    padding: 20px;
+
+    cursor: pointer;
+}
+
+.comment-submission-button:hover {
+    color: rgb(79, 0, 238);
+    background-color: white;
+}
+
+.users-comments-container {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.users-comments-name-comment {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+    width: 85%;
+    box-sizing: border-box;
+
+    background-color: rgb(233, 233, 233);
+
+    border: 1px solid lavender;
+    border-radius: 8px;
+
+    padding: 10px;
+    margin-left: 40px;
+}
+
+.users-comments-name-time-container {
+    display: flex;
+    flex-direction: row;
+    
+    align-items: center;
+    gap: 15px;
+
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.users-comments-name,
+.users-comments-time {
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+}
+
+.users-comments-name {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+
+    margin-bottom: 0px;
+    padding-left: 10px;
+}
+
+.users-comments-time {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+
+    color: rgb(75, 75, 75);
+
+    margin-bottom: 0px;
+}
+
+.users-comments-content-container {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 10px;
+}
+
+.users-comments-comment {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 25px;
+    margin: 0;
+    padding-left: 10px;
+    overflow-wrap: anywhere;
+}
+
+.comment-menu-wrapper {
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.three-dot-comment {
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+}
+
+.comment-buttons-container {
+    position: absolute;
+    top: -150%;
+    right: 80%;
+    width: 150px;
+    background: white;
+    border: 1px solid lavender;
+    border-radius: 8px;
+    z-index: 100;
+}
+
+.edit-comment-button,
+.delete-comment-button {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+
+    padding: 0 12px;
+
+    font-family: 'Google Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    cursor: pointer;
+
+    transition: background-color 0.15s ease;
+}
+
+.delete-comment-button {
+    color: red;
+}
+
+.edit-comment-button:hover {
+    color: white;
+    background-color: grey;
+}
+
+.delete-comment-button:hover {
+    color: white;
+    background-color: red;
+}
+
+.edit-comment-buttons {
+    display: flex;
+    flex-direction: row;
+
+    gap: 5px;
+}
+
+.edit-comment-cancel-button,
+.edit-comment-save-button {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+
+    border: 1px solid lavender;
+    border-radius: 15px;
+
+    cursor: pointer;
+}
+
+.edit-comment-cancel-button {
+    color: white;
+    background-color: grey;
+}
+
+.edit-comment-save-button {
+    color: white;
+    background-color: #3d00bd;
 }

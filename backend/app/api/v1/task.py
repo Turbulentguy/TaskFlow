@@ -166,12 +166,24 @@ def getMyTasks(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    queryTask = db.query(Task).filter(
-        Task.assignee_id == current_user.id
-    ).all()
+    queryTasks = db.query(Task).join(
+        Project,
+        Project.id == Task.project_id
+    ).outerjoin(
+        ProjectMember,
+        (ProjectMember.project_id == Task.project_id) &
+        (ProjectMember.user_id == current_user.id)
+    ).filter(
+        (Project.owner_id == current_user.id) |
+        (
+            (ProjectMember.user_id == current_user.id) &
+            (ProjectMember.role == "Admin")
+        ) |
+        (Task.assignee_id == current_user.id) 
+    ).distinct().all()
 
     return {
-        "items": queryTask
+        "items": queryTasks
     }
 
 @router.patch("/tasks/{task_id}", response_model = TaskCreateResponse)
@@ -225,7 +237,7 @@ def updateTask(
         )
 
     if not (is_owner or is_admin):
-        if queryTask.assignee_id != current_user.id or queryTask.created_by != current_user.id:
+        if queryTask.assignee_id != current_user.id:
             raise HTTPException(
                 status_code=403,
                 detail="Access denied."
@@ -303,7 +315,7 @@ def deleteTask(
             detail = "Access denied."
         )
 
-    if not (is_owner or is_admin or (is_member and queryTask.created_by == current_user.id)):
+    if not (is_owner or is_admin or (is_member and queryTask.assignee_id == current_user.id)):
         raise HTTPException(
             status_code = 403,
             detail = "Access denied."

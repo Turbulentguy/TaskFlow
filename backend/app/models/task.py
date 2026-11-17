@@ -22,4 +22,4 @@ class Task(Base):
     project = relationship("Project", back_populates = "tasks")
     assignee = relationship("User", back_populates = "task_assignee", foreign_keys = [assignee_id])
     creator = relationship("User", back_populates = "task_creator", foreign_keys = [created_by])
-    comments = relationship("Comment", back_populates = "task")
+    comments = relationship("Comment", back_populates = "task", cascade="all, delete-orphan")

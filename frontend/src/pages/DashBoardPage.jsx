@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg'
-import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2 } from 'lucide-react'
+import { House, Folder, SquareCheck, Settings, LogOut, CircleUser, Clock, Clock8Icon, ClockAlert, CheckCircle2, ChevronRight } from 'lucide-react'
 
 import '../pages/DashBoardPage.css'
 
@@ -8,8 +8,11 @@ import ProjectPage from "./ProjectPage.jsx";
 import MyTaskPage from "./MyTaskPage.jsx";
 import SettingsPage from "./SettingsPage.jsx";
 import LoginPage from "./LoginPage.jsx";
+import TaskChart from "../components/TaskChart.jsx";
 
 import { getDashboard } from '../services/dashboardservice.js';
+import { getProjects } from "../services/projectservice.js";
+import { getTasksById } from "../services/taskservice.js";
 
 function DashboardPage({ user, setUser }) {
     const [isProject, setIsProject] = useState(false);
@@ -18,6 +21,7 @@ function DashboardPage({ user, setUser }) {
     const [isLogin, setIsLogin] = useState(false);
     
     const [statisticDashboard, setStatisticDashboard] = useState(null);
+    const [projects, setProjects] = useState([]);
 
     useEffect(() => {
         async function fetchDashboard() {
@@ -32,12 +36,41 @@ function DashboardPage({ user, setUser }) {
         fetchDashboard();
     }, [user]);
 
+    useEffect(() => {
+        async function fetchProjects() {
+            try {
+                const data = await getProjects(user);
+
+                const projectList = await Promise.all(
+                    (data.items ?? []).map(async (project) => {
+                        const taskData = await getTasksById(user, project.id);
+
+                        return {
+                            ...project,
+                            taskCount: taskData.total ?? 0
+                        };
+                    })
+                )
+
+                setProjects(projectList);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        fetchProjects();
+    }, [user]);
+
+    const activeProjects = [...projects]
+        .sort((a, b) => b.taskCount - a.taskCount)
+        .slice(0, 5);
+
     if (isLogin) {
         return <LoginPage />
     }
 
     if (isProject) {
-        return <ProjectPage user={user}/>
+        return <ProjectPage user={user} setUser={setUser}/>
     }
 
     if (isMyTask) {
@@ -147,7 +180,7 @@ function DashboardPage({ user, setUser }) {
                                 Overdue
                             </p>
                             <p className="dashboard-count">
-                                {statisticDashboard?.done_tasks}
+                                {statisticDashboard?.overdue_tasks}
                             </p>
                         </div>
                         <div className="done-tasks-container">
@@ -164,9 +197,37 @@ function DashboardPage({ user, setUser }) {
                     </div>
                     <div className="projects-tasks-container">
                         <div className="projects-container">
-                            <p className="recent-projects">
-                                Recent Projects
+                            <div className="recent-projects-headers">
+                                <p className="recent-projects">
+                                    Recent Projects
+                                </p>
+                                <button className="recent-projects-view-all" onClick={() => {setIsProject(true)}}>
+                                    View all
+                                </button>
+                            </div>
+                            {activeProjects.map((project) => (
+                                <div key={project.id} className="recent-project-name-task-container">
+                                    <p className="recent-project-name">
+                                        {project.name}
+                                    </p>
+                                    <div className="recent-project-num-tasks-logo">
+                                        <p className="recent-project-task">
+                                            {project.taskCount} {project.taskCount > 1 ? "tasks" : "task"}
+                                        </p>
+                                        <button className="recent-project-logo" onClick={() => setIsProject(true)}>
+                                            <ChevronRight />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="task-overview-container">
+                            <p className="task-overview">
+                                Task Overview
                             </p>
+                            <TaskChart
+                                statisticDashboard={statisticDashboard}
+                            />
                         </div>
                     </div>
                 </div>

@@ -335,21 +335,89 @@
     display: flex;
     flex-direction: row;
 
+    gap: 20px;
+
     margin-top: 50px;
 }
 
-.projects-container {
+.projects-container,
+.task-overview-container {
     width: 50%;
-    height: 100vh;
 
     border: 1px solid lavender;
     border-radius: 15px;
 }
 
-.recent-projects {
+.recent-projects-headers {
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+}
+
+.recent-projects,
+.task-overview {
     font-family: 'Google Sans', sans-serif;
     font-size: 48px;
     font-weight: 700;
 
     margin-left: 40px;
 }
+
+.recent-projects-view-all {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+
+    color: #3d00bd;
+    background-color: white;
+
+    border: none;
+
+    margin: 0 40px 0 auto;
+
+    cursor: pointer;
+}
+
+.recent-project-name-task-container {
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.recent-project-name,
+.recent-project-task {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 24px;
+}
+
+.recent-project-name {
+    font-weight: 700;
+
+    margin-left: 40px;
+}
+
+.recent-project-num-tasks-logo {
+    display: flex;
+    flex-direction: row;
+
+    gap: 20px;
+
+    margin: 0 40px 0 auto;
+}
+
+.recent-project-task {
+    font-weight: 500;
+}
+
+.recent-project-logo {
+    background-color: transparent;
+    border: none;
+
+    cursor: pointer;
+}
+
+
+

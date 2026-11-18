@@ -452,11 +452,11 @@ function MyTaskPage({ user, setUser }) {
     }
 
     if (isProject) {
-        return <ProjectPage user={user}/>
+        return <ProjectPage user={user} setUser={setUser}/>
     }
 
     if (isSettings) {
-        return <SettingsPage user={user}/>
+        return <SettingsPage user={user} setUser={setUser}/>
     }
 
     if (isLogin) {

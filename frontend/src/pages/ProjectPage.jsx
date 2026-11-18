@@ -275,7 +275,7 @@ function ProjectPage({ user, setUser }) {
     }, [user, projects]);
 
     if (isDashboard) {
-        return <DashboardPage user={user}/>
+        return <DashboardPage user={user} setUser={setUser}/>
     }
 
     if (isMyTask) {

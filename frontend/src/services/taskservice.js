@@ -28,6 +28,27 @@ async function createTask(user, project_id, form) {
     return data;
 }
 
+async function getTasksById(user, project_id) {
+    const response = await fetch(
+        `${API_URL}/projects/${project_id}/tasks`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "Application/json",
+                "Authorization": `Bearer ${user.access_token}`
+            }
+        }
+    );
+
+    const data = response.json();
+
+    if (!response.ok) {
+        throw new Error(data.detail);
+    }
+
+    return data;
+}
+
 async function getTasks(user) {
     const response = await fetch(
         `${API_URL}/tasks/me`,
@@ -99,4 +120,4 @@ async function deleteTask(user, task_id) {
     return true;
 }
 
-export { createTask, getTasks, updateTask, deleteTask }
+export { createTask, getTasksById, getTasks, updateTask, deleteTask }

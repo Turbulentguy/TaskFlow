@@ -24,8 +24,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex = r"https://task-flow-.*\.vercel\.app",
     allow_origins = [
-        "https://task-flow-7vidxx4hg-turbulentguys-projects.vercel.app",
         "http://localhost:5173"
     ],
     allow_credentials = True,

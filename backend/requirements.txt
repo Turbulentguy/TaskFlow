@@ -1,0 +1,9 @@
+fastapi==0.115.13
+uvicorn==0.34.3
+SQLAlchemy==2.0.44
+alembic==1.17.0
+python-dotenv==1.1.0
+bcrypt
+python-jose[cryptography]
+python-multipart==0.0.20
+psycopg2-binary

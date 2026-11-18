@@ -7,3 +7,4 @@ bcrypt
 python-jose[cryptography]
 python-multipart==0.0.20
 psycopg2-binary
+email-validator

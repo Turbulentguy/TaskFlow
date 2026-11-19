@@ -193,7 +193,9 @@ function ProjectPage({ user, setUser }) {
     
     async function handleChangeRole(member) {
         try {
-            const data = await updateMember(user, manageMember.id, member.user_id);
+            await updateMember(user, manageMember.id, member.user_id);
+
+            const data = await getMembers(user, manageMember.id);
 
             setMembers((previousMembers) => ({
                 ...previousMembers,
@@ -616,8 +618,7 @@ function ProjectPage({ user, setUser }) {
                         </div>
                     </div>
             )}
-            {
-                deleteProjectDetail && (
+            {deleteProjectDetail && (
                     <div className="create-project-overlay">
                         <div className="create-project-popup">
                             <div className="create-project-container">

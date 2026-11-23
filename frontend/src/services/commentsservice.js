@@ -1,15 +1,18 @@
+import { fetchAPI } from "./api.js";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function getComments(user, task_id) {
-    const response = await fetch(
+async function getComments(user, task_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/tasks/${task_id}/comments`,
         {
             method: "GET",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -21,19 +24,20 @@ async function getComments(user, task_id) {
     return data;
 }
 
-async function addComment(user, task_id, form) {
-    const response = await fetch(
+async function addComment(user, task_id, form, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/tasks/${task_id}/comments`,
         {
             method: "POST",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             },
             body: JSON.stringify({
                 content: form.content
             })
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -45,19 +49,20 @@ async function addComment(user, task_id, form) {
     return data;
 }
 
-async function updateComment(user, comment_id, form) {
-    const response = await fetch(
+async function updateComment(user, comment_id, form, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/comments/${comment_id}`,
         {
             method: "PATCH",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             },
             body: JSON.stringify({
                 content: form.content
             })
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -69,16 +74,17 @@ async function updateComment(user, comment_id, form) {
     return data;
 }
 
-async function deleteComment(user, comment_id) {
-    const response = await fetch(
+async function deleteComment(user, comment_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/comments/${comment_id}`,
         {
             method: "DELETE",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
+        },
+        user,
+        setUser
     );
 
     if (!response.ok) {

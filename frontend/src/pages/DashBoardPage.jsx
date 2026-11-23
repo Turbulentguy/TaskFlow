@@ -13,6 +13,7 @@ import TaskChart from "../components/TaskChart.jsx";
 import { getDashboard } from '../services/dashboardservice.js';
 import { getProjects } from "../services/projectservice.js";
 import { getTasksById } from "../services/taskservice.js";
+import { handleLogout } from "../components/handlelogout.js";
 
 function DashboardPage({ user, setUser }) {
     const [isProject, setIsProject] = useState(false);
@@ -24,9 +25,13 @@ function DashboardPage({ user, setUser }) {
     const [projects, setProjects] = useState([]);
 
     useEffect(() => {
+        if (!user) {
+            return;
+        }
+
         async function fetchDashboard() {
             try {
-                const data = await getDashboard(user);
+                const data = await getDashboard(user, setUser);
                 setStatisticDashboard(data);
             } catch (error) {
                 alert(error.message);
@@ -34,16 +39,20 @@ function DashboardPage({ user, setUser }) {
         }
 
         fetchDashboard();
-    }, [user]);
+    }, [user?.access_token]);
 
     useEffect(() => {
+        if (!user) {
+            return;
+        }
+
         async function fetchProjects() {
             try {
-                const data = await getProjects(user);
+                const data = await getProjects(user, setUser);
 
                 const projectList = await Promise.all(
                     (data.items ?? []).map(async (project) => {
-                        const taskData = await getTasksById(user, project.id);
+                        const taskData = await getTasksById(user, project.id, setUser);
 
                         return {
                             ...project,
@@ -59,7 +68,7 @@ function DashboardPage({ user, setUser }) {
         }
 
         fetchProjects();
-    }, [user]);
+    }, [user?.access_token]);
 
     const activeProjects = [...projects]
         .sort((a, b) => b.taskCount - a.taskCount)
@@ -107,7 +116,7 @@ function DashboardPage({ user, setUser }) {
                         <Settings size={40} color="white"/>
                         <span>Settings</span>
                     </p>
-                    <p className="side-bar-menu-selections logout-selection" onClick={() => {setIsLogin(true)}}>
+                    <p className="side-bar-menu-selections logout-selection" onClick={() => {handleLogout(setUser, setIsLogin)}}>
                         <LogOut size={40} color="white"/>
                         <span>Log Out</span>
                     </p>

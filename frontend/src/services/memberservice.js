@@ -1,15 +1,18 @@
+import { fetchAPI } from "./api.js";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function getMembers(user, project_id) {
-    const response = await fetch(
+async function getMembers(user, project_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/projects/${project_id}/members`,
         {
             method: "GET",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             },
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -21,19 +24,20 @@ async function getMembers(user, project_id) {
     return data;
 }
 
-async function addMember(user, project_id, form) {
-    const response = await fetch(
+async function addMember(user, project_id, form, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/projects/${project_id}/members`,
         {
             method: "POST",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             },
             body: JSON.stringify({
                 email: form.email
             })
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -45,16 +49,17 @@ async function addMember(user, project_id, form) {
     return data;
 }
 
-async function updateMember(user, project_id, user_id) {
-    const response = await fetch(
+async function updateMember(user, project_id, user_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/projects/${project_id}/members/${user_id}`,
         {
             method: "PATCH",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -66,16 +71,17 @@ async function updateMember(user, project_id, user_id) {
     return data;
 }
 
-async function deleteMember(user, project_id, user_id) {
-    const response = await fetch(
+async function deleteMember(user, project_id, user_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/projects/${project_id}/members/${user_id}`,
         {
             method: "DELETE",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
+        },
+        user,
+        setUser
     );
 
     if (!response.ok) {

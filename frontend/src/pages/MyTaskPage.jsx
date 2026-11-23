@@ -18,6 +18,7 @@ import { createTask, getTasks, updateTask, deleteTask } from "../services/taskse
 import { getProjects } from "../services/projectservice.js";
 import { getMembers } from "../services/memberservice.js";
 import { addComment, deleteComment, getComments, updateComment } from "../services/commentsservice.js";
+import { handleLogout } from "../components/handlelogout.js";
 
 function MyTaskPage({ user, setUser }) {
     const [isDashboard, setIsDashboard] = useState(false);
@@ -72,9 +73,13 @@ function MyTaskPage({ user, setUser }) {
     });
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchDashboard() {
             try {
-                const data = await getDashboard(user);
+                const data = await getDashboard(user, setUser);
                 setStatisticDashboard(data);
             } catch (error) {
                 alert(error.message);
@@ -82,12 +87,16 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchDashboard();
-    }, [user]);
+    }, [user?.access_token]);
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchProjects() {
             try {
-                const data = await getProjects(user);
+                const data = await getProjects(user, setUser);
                 setProjects(data.items ?? []);
             } catch (error) {
                 alert(error.message);
@@ -95,17 +104,22 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchProjects();
-    }, [user]);
+    }, [user?.access_token]);
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchProjectMembers() {
+            setMembers([]);
+
             if (!selectedProjectId) {
-                setMembers([]);
                 return;
             }
 
             try {
-                const data = await getMembers(user, selectedProjectId);
+                const data = await getMembers(user, selectedProjectId, setUser);
                 setMembers(data.items ?? []);
             } catch (error) {
                 alert(error.message);
@@ -113,14 +127,18 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchProjectMembers();
-    }, [user, selectedProjectId]);
+    }, [user?.access_token, selectedProjectId]);
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchAllMembers() {
             try {
                 const results = await Promise.all(
                     projects.map(async (project) => {
-                        const data = await getMembers(user, project.id);
+                        const data = await getMembers(user, project.id, setUser);
 
                         return {
                             projectId: project.id,
@@ -149,13 +167,21 @@ function MyTaskPage({ user, setUser }) {
 
         if (projects.length > 0) {
             fetchAllMembers();
+        } else {
+            setProjectMembers({});
+            setAllMembers([]);
         }
-    }, [user, projects]);
+
+    }, [user?.access_token, projects]);
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchTasks() {
             try {
-                const data = await getTasks(user);
+                const data = await getTasks(user, setUser);
                 setTasks(data.items ?? []);
             } catch (error) {
                 alert(error.message);
@@ -163,18 +189,23 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchTasks();
-    }, [user]);
+    }, [user?.access_token]);
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchComments() {
+            setComments([]);
+            setNumComments(0);
+
             if (!activeComment?.id) {
-                setNumComments(0);
-                setComments([]);
                 return;
             }
 
             try {
-                const data = await getComments(user, activeComment.id);
+                const data = await getComments(user, activeComment.id, setUser);
                 setNumComments(data.total ?? 0);
                 setComments(data.items ?? []);
             } catch (error) {
@@ -183,7 +214,7 @@ function MyTaskPage({ user, setUser }) {
         }
 
         fetchComments();
-    }, [user, activeComment?.id]);
+    }, [user?.access_token, activeComment?.id]);
 
     function handleAddTaskChange(event) {
         const { name, value } = event.target;
@@ -202,12 +233,12 @@ function MyTaskPage({ user, setUser }) {
                 ...taskForm,
                 assignee_id: taskForm.assignee_id || null,
                 due_date: taskForm.due_date || null
-            });
+            }, setUser);
 
-            const updatedTasks = await getTasks(user);
+            const updatedTasks = await getTasks(user, setUser);
             setTasks(updatedTasks.items ?? []);
 
-            const updatedDashboard = await getDashboard(user);
+            const updatedDashboard = await getDashboard(user, setUser);
             setStatisticDashboard(updatedDashboard);
 
             alert("Task created successfully");
@@ -245,12 +276,12 @@ function MyTaskPage({ user, setUser }) {
                 ...editTaskForm,
                 assignee_id: editTaskForm.assignee_id || null,
                 due_date: editTaskForm.due_date || null
-            });
+            }, setUser);
 
-            const updatedTasks = await getTasks(user);
+            const updatedTasks = await getTasks(user, setUser);
             setTasks(updatedTasks.items ?? []);
 
-            const updatedDashboard = await getDashboard(user);
+            const updatedDashboard = await getDashboard(user, setUser);
             setStatisticDashboard(updatedDashboard);
 
             alert("Task updated successfully");
@@ -275,9 +306,6 @@ function MyTaskPage({ user, setUser }) {
     function canManageTask(task) {
         const isAssignee =
             String(task.assignee_id) === String(user.id);
-
-        const isCreator =
-            String(task.created_by) === String(user.id);
 
         const currentProjectMember = projectMembers[task.project_id]?.find(
             (member) => String(member.user_id) === String(user.id)
@@ -304,12 +332,12 @@ function MyTaskPage({ user, setUser }) {
         }
 
         try {
-            await deleteTask(user, deleteTaskDetail.id);
+            await deleteTask(user, deleteTaskDetail.id, setUser);
 
-            const updatedTasks = await getTasks(user);
+            const updatedTasks = await getTasks(user, setUser);
             setTasks(updatedTasks.items ?? []);
 
-            const updatedDashboard = await getDashboard(user);
+            const updatedDashboard = await getDashboard(user, setUser);
             setStatisticDashboard(updatedDashboard);
 
             setDeleteTaskDetail(null);
@@ -322,7 +350,7 @@ function MyTaskPage({ user, setUser }) {
         }
     }
 
-    async function handleCommentChange(event) {
+    function handleCommentChange(event) {
         const { name, value } = event.target;
         
         setCommentForm((previousDefault) => ({
@@ -335,13 +363,13 @@ function MyTaskPage({ user, setUser }) {
         event.preventDefault();
 
         try {
-            await addComment(user, activeComment.id, commentForm);
+            await addComment(user, activeComment.id, commentForm, setUser);
 
             setCommentForm({
                 content: ''
             });
 
-            const data = await getComments(user, activeComment.id);
+            const data = await getComments(user, activeComment.id, setUser);
 
             setComments(data.items ?? []);
             setNumComments(data.total ?? 0);
@@ -363,7 +391,7 @@ function MyTaskPage({ user, setUser }) {
         event.preventDefault();
 
         try {
-            await updateComment(user, editCommentId, editCommentForm);
+            await updateComment(user, editCommentId, editCommentForm, setUser);
 
             setComments((previousComments) =>
                 previousComments.map((comment) =>
@@ -385,7 +413,12 @@ function MyTaskPage({ user, setUser }) {
 
     async function handleDeleteCommentSubmit(commentId) {
         try {
-            await deleteComment(user, commentId);
+            await deleteComment(user, commentId, setUser);
+
+            if (String(editCommentId) === String(commentId)) {
+                setEditCommentId(null);
+                setEditCommentForm({ content: '' });
+            }
 
             setComments((previousComments) =>
                 previousComments.filter(
@@ -405,7 +438,7 @@ function MyTaskPage({ user, setUser }) {
     }
 
     const currentMember = members.find(
-        (member) => member.user_id === user.id
+        (member) => String(member.user_id) === String(user.id)
     );
 
     const isAdmin = ["Owner", "Admin"].includes(currentMember?.role);
@@ -413,7 +446,7 @@ function MyTaskPage({ user, setUser }) {
     const availableAssignees = isAdmin
         ? members
         : members.filter(
-            (member) => member.user_id === user.id
+            (member) => String(member.user_id) === String(user.id)
         );
 
     const now = new Date();
@@ -489,7 +522,7 @@ function MyTaskPage({ user, setUser }) {
                         <Settings size={40} color="white"/>
                         <span>Settings</span>
                     </p>
-                    <p className="side-bar-menu-selections logout-selection" onClick={() => {setIsLogin(true)}}>
+                    <p className="side-bar-menu-selections logout-selection" onClick={() => {handleLogout(setUser, setIsLogin)}}>
                         <LogOut size={40} color="white"/>
                         <span>Log Out</span>
                     </p>
@@ -698,6 +731,11 @@ function MyTaskPage({ user, setUser }) {
                                                                 setActiveComment(
                                                                     activeComment?.id === task.id ? null : task
                                                                 );
+
+                                                                setActiveCommentId(null);
+                                                                setEditCommentId(null);
+                                                                setEditCommentForm({ content: '' });
+                                                                setCommentForm({ content: '' });
                                                             }}>
                                                                 <MessageCircle size={30}/>
                                                             </button>
@@ -732,6 +770,7 @@ function MyTaskPage({ user, setUser }) {
                                                                 </button>
                                                                 <button className="task-features-delete-task-button" onClick={() => {
                                                                     setDeleteTaskDetail(task);
+                                                                    setActiveTaskMenu(null);
                                                                 }}>
                                                                     <Trash /> Delete Task
                                                                 </button>
@@ -1034,7 +1073,13 @@ function MyTaskPage({ user, setUser }) {
                         <div className="task-comments-header">
                             <MessageCircleMore size={40}/>
                             <span>Task Comments</span>
-                            <X size={40} className="close-comments" onClick={() => {setActiveComment(null)}}/>
+                            <X size={40} className="close-comments" onClick={() => {
+                                setActiveComment(null);
+                                setActiveCommentId(null);
+                                setEditCommentId(null);
+                                setEditCommentForm({ content: '' });
+                                setCommentForm({ content: '' });
+                            }}/>
                         </div>
                     </div>
                     <div className="task-comments-section">

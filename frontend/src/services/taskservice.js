@@ -1,13 +1,14 @@
+import { fetchAPI } from "./api.js";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function createTask(user, project_id, form) {
-    const response = await fetch(
+async function createTask(user, project_id, form, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/projects/${project_id}/tasks`,
         {
             method: "POST",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             },
             body: JSON.stringify({
                 title: form.title,
@@ -16,7 +17,9 @@ async function createTask(user, project_id, form) {
                 assignee_id: form.assignee_id,
                 due_date: form.due_date
             })
-        }
+        },
+        user,
+        setUser
     );
     
     const data = await response.json();
@@ -28,37 +31,17 @@ async function createTask(user, project_id, form) {
     return data;
 }
 
-async function getTasksById(user, project_id) {
-    const response = await fetch(
+async function getTasksById(user, project_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/projects/${project_id}/tasks`,
         {
             method: "GET",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
-    );
-
-    const data = response.json();
-
-    if (!response.ok) {
-        throw new Error(data.detail);
-    }
-
-    return data;
-}
-
-async function getTasks(user) {
-    const response = await fetch(
-        `${API_URL}/tasks/me`,
-        {
-            method: "GET",
-            headers: {
-                "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
-            }
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -70,14 +53,35 @@ async function getTasks(user) {
     return data;
 }
 
-async function updateTask(user, task_id, form) {
-    const response = await fetch(
+async function getTasks(user, setUser) {
+    const response = await fetchAPI(
+        `${API_URL}/tasks/me`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "Application/json",
+            }
+        },
+        user,
+        setUser
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.detail);
+    }
+
+    return data;
+}
+
+async function updateTask(user, task_id, form, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/tasks/${task_id}`,
         {
             method: "PATCH",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             },
 
             body: JSON.stringify({
@@ -88,7 +92,9 @@ async function updateTask(user, task_id, form) {
             assignee_id: form.assignee_id,
             due_date: form.due_date
             })
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();
@@ -100,20 +106,21 @@ async function updateTask(user, task_id, form) {
     return data;
 }
 
-async function deleteTask(user, task_id) {
-    const response = await fetch(
+async function deleteTask(user, task_id, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/tasks/${task_id}`,
         {
             method: "DELETE",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
+        },
+        user,
+        setUser
     );
 
     if (!response.ok) {
-        const data = response.json();
+        const data = await response.json();
         throw new Error(data.detail);
     }
 

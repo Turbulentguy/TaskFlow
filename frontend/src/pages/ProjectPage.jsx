@@ -12,6 +12,7 @@ import LoginPage from "./LoginPage.jsx";
 
 import { getProjects, createProject, editProject, deleteProject } from "../services/projectservice.js";
 import { getMembers, addMember, updateMember, deleteMember } from "../services/memberservice.js";
+import { handleLogout } from "../components/handlelogout.js";
 
 function ProjectPage({ user, setUser }) {
     const [isDashboard, setIsDashboard] = useState(false);
@@ -64,7 +65,7 @@ function ProjectPage({ user, setUser }) {
     }
 
     function handleEditProjectChange(event) {
-        const {name, value} = event.target;
+        const { name, value } = event.target;
 
         setEditProjectForm((previousForm) => ({
             ...previousForm,
@@ -76,7 +77,7 @@ function ProjectPage({ user, setUser }) {
         event.preventDefault();
 
         try {
-            const data = await createProject(user, form);
+            const data = await createProject(user, form, setUser);
 
             setProjects((previousProjects) => [
                 ...previousProjects,
@@ -91,7 +92,7 @@ function ProjectPage({ user, setUser }) {
             setIsAddProject(false);
 
         } catch (error) {
-            console.log(error);
+            alert(error.message);
         }
     } 
 
@@ -119,9 +120,9 @@ function ProjectPage({ user, setUser }) {
 
             await addMember(user, manageMember.id, {
                 email
-            });
+            }, setUser);
 
-            const data = await getMembers(user, manageMember.id);
+            const data = await getMembers(user, manageMember.id, setUser);
 
             setMembers((previousMember) => ({
                 ...previousMember,
@@ -132,10 +133,10 @@ function ProjectPage({ user, setUser }) {
                 email: ''
             });
 
-            setActiveMenuId(null);
+            setActiveMemberMenuId(null);
 
         } catch (error) {
-            console.log(error);
+            alert(error.message);
         }
     }
 
@@ -143,7 +144,7 @@ function ProjectPage({ user, setUser }) {
         event.preventDefault();
 
         try {
-            const data = await editProject(user, editProjectDetail.id, editProjectForm);
+            const data = await editProject(user, editProjectDetail.id, editProjectForm, setUser);
 
             setProjects((previousProjects) =>
                 previousProjects.map((project) =>
@@ -164,13 +165,9 @@ function ProjectPage({ user, setUser }) {
             return;
         }
 
-        if (!window.confirm(`Are you sure you want to delete "${deleteProjectDetail.name}"? This action cannot be undone, and all tasks, comments, and project members associated with this project will be permanently deleted.`)) {
-            return;
-        }
-
         try {
 
-            await deleteProject(user, deleteProjectDetail.id);
+            await deleteProject(user, deleteProjectDetail.id, setUser);
 
             setProjects((previousProjects) =>
                 previousProjects.filter(
@@ -193,9 +190,9 @@ function ProjectPage({ user, setUser }) {
     
     async function handleChangeRole(member) {
         try {
-            await updateMember(user, manageMember.id, member.user_id);
+            await updateMember(user, manageMember.id, member.user_id, setUser);
 
-            const data = await getMembers(user, manageMember.id);
+            const data = await getMembers(user, manageMember.id, setUser);
 
             setMembers((previousMembers) => ({
                 ...previousMembers,
@@ -213,11 +210,11 @@ function ProjectPage({ user, setUser }) {
         if (!window.confirm(`Remove ${member.name} from this project?`)) {
             return;
         }
-        
-        try {
-            await deleteMember(user, manageMember.id, member.user_id);
 
-            const data = await getMembers(user, manageMember.id);
+        try {
+            await deleteMember(user, manageMember.id, member.user_id, setUser);
+
+            const data = await getMembers(user, manageMember.id, setUser);
 
             setMembers((previousMembers) => ({
                 ...previousMembers,
@@ -240,18 +237,22 @@ function ProjectPage({ user, setUser }) {
     );
 
     useEffect(() => {
+        if (!user?.access_token) {
+            return;
+        }
+
         async function fetchProjects() {
             try {
-                const data = await getProjects(user);
+                const data = await getProjects(user, setUser);
                 setProjects(data.items ?? []);
             } catch (error) {
-                error.message;
+                alert(error.message);
             }
         }
 
         fetchProjects();
 
-    }, [user]);
+    }, [user?.access_token]);
 
     useEffect(() => {
         async function fetchMembers() {
@@ -259,14 +260,14 @@ function ProjectPage({ user, setUser }) {
                 const memberByProject = {};
 
                 for (const project of projects) {
-                    const data = await getMembers(user, project.id);
+                    const data = await getMembers(user, project.id, setUser);
                     memberByProject[project.id] = data;
                 }
                 
                 setMembers(memberByProject)
 
             } catch (error) {
-                error.message;
+                alert(error.message);
             }
         }
 
@@ -274,7 +275,7 @@ function ProjectPage({ user, setUser }) {
             fetchMembers();
         }
 
-    }, [user, projects]);
+    }, [user?.access_token, projects]);
 
     if (isDashboard) {
         return <DashboardPage user={user} setUser={setUser}/>
@@ -318,7 +319,7 @@ function ProjectPage({ user, setUser }) {
                         <Settings size={40} color="white"/>
                         <span>Settings</span>
                     </p>
-                    <p className="side-bar-menu-selections logout-selection" onClick={() => {setIsLogin(true)}}>
+                    <p className="side-bar-menu-selections logout-selection" onClick={() => {handleLogout(setUser, setIsLogin)}}>
                         <LogOut size={40} color="white"/>
                         <span>Log Out</span>
                     </p>
@@ -423,7 +424,7 @@ function ProjectPage({ user, setUser }) {
                                     </p>
                                     <p className="project-members-container">
                                         <Users size={40}/>
-                                        <span>{(members[project.id]?.total ?? 0) === 1 ? '1 member' : `${members[project.id]?.total} members`} </span>
+                                        <span>{(members[project.id]?.total ?? 0) === 1 ? '1 member' : `${members[project.id]?.total ?? 0} members`} </span>
                                     </p>
                                 </div>
                             </div>
@@ -477,7 +478,10 @@ function ProjectPage({ user, setUser }) {
                                 <p className="create-project-header-title">
                                     Manage Members
                                 </p>
-                                <X size={40} className="close" onClick={() => {setManageMember(null)}}/>
+                                <X size={40} className="close" onClick={() => {
+                                    setManageMember(null);
+                                    setActiveMemberMenuId(null);
+                                }}/>
                             </div>
                             <div className="create-project-header-subtitle">
                                 <p className="project-title">
@@ -527,7 +531,13 @@ function ProjectPage({ user, setUser }) {
                                                 {member.role}
                                             </div>
                                         </div>
-                                        {manageMember.owner_id === user.id && (
+                                        {(manageMember.owner_id === user.id ||
+                                        members[manageMember.id]?.items?.some(
+                                            (item) =>
+                                                item.user_id === user.id &&
+                                                item.role === "Admin"
+                                            )
+                                        ) && (
                                         <button
                                             className="project-member-three-dot"
                                             type="button"
@@ -545,9 +555,14 @@ function ProjectPage({ user, setUser }) {
                                         {
                                             activeMemberMenuId === member.user_id && (
                                                 <div className="active-member-menu-container">
-                                                    <button className="active-member-menu-change-role" onClick={() => handleChangeRole(member)}>
-                                                        Change Role
-                                                    </button>
+                                                    {manageMember.owner_id === user.id && (
+                                                        <button
+                                                            className="active-member-menu-change-role"
+                                                            onClick={() => handleChangeRole(member)}
+                                                        >
+                                                            Change Role
+                                                        </button>
+                                                    )}
                                                     <button className="active-member-menu-remove-member" onClick={() => handleDeleteMember(member)}>
                                                         Remove Member
                                                     </button>
@@ -565,7 +580,7 @@ function ProjectPage({ user, setUser }) {
                             </div>
                             <form onSubmit={handleMemberSubmit}>
                                 <div className="add-member-input-container">
-                                    <input name="email" onChange={handleMemberChange} value={memberForm.email} type="text" className="add-members-input" placeholder="Search by name or email..."/>
+                                    <input name="email" onChange={handleMemberChange} value={memberForm.email} type="email" className="add-members-input" placeholder="Enter member email..." required/>
                                     <button className="add-members-button">
                                         Add
                                     </button>
@@ -573,6 +588,7 @@ function ProjectPage({ user, setUser }) {
                                 <button className="add-members-cancel-button" type="button" onClick={() => {
                                     setManageMember(null);
                                     setMemberForm({ email: '' });
+                                    setActiveMemberMenuId(null);
                                 }}>
                                     Close
                                 </button>

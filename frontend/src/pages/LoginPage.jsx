@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logo from '../assets/5f9312fea43b7381d2fe525c7b736dd8.jpg';
 
 import '../pages/LoginPage.css';
 
 import RegisterPage from '../pages/RegisterPage.jsx';
 import DashboardPage from '../pages/DashBoardPage.jsx';
-import { loginUser } from '../services/authservice.js';
+import { loginUser, restoreSession } from '../services/authservice.js';
 
 function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   const [isDashboard, setIsDashBoard] = useState(false);
   const [user, setUser] = useState(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [form, setForm] = useState({
     email: '',
     password: ''
@@ -41,6 +42,29 @@ function LoginPage() {
     } catch (error) {
       alert(error.message);
     }
+  }
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const restoredUser = await restoreSession();
+
+        if (restoredUser) {
+          setUser(restoredUser);
+          setIsDashBoard(true);
+        }
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        setIsCheckingSession(false);
+      }
+    }
+
+    checkSession();
+  }, []);
+
+  if (isCheckingSession) {
+    return <p>Checking session...</p>;
   }
 
   if (isRegister) {

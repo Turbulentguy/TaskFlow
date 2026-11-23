@@ -14,6 +14,7 @@ from app.models.project import Project
 from app.models.members import ProjectMember
 from app.models.task import Task
 from app.models.comment import Comment
+from app.models.refresh_token import RefreshToken
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

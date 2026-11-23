@@ -23,3 +23,4 @@ class User(Base):
     task_creator = relationship("Task", back_populates = "creator", foreign_keys = "Task.created_by")
     comments = relationship("Comment", back_populates = "user")
     project_members = relationship("ProjectMember", back_populates = "member")
+    refresh_tokens = relationship("RefreshToken", back_populates = "user", cascade = "all, delete-orphan", passive_deletes = True)

@@ -12,6 +12,7 @@ import LoginPage from "./LoginPage.jsx";
 import MyTaskPage from "./MyTaskPage.jsx";
 
 import { userRename, changePassword } from "../services/userservice.js";
+import { handleLogout } from "../components/handlelogout.js";
 
 function SettingsPage({ user, setUser }) {
     const [isDashboard, setIsDashboard] = useState(false);
@@ -67,7 +68,7 @@ function SettingsPage({ user, setUser }) {
         }
 
         try {
-            const data = await userRename(user, newName);
+            const data = await userRename(user, newName, setUser);
 
             alert("Name updated successfully!");
 
@@ -104,7 +105,7 @@ function SettingsPage({ user, setUser }) {
         }
 
         try {
-            await changePassword(user, passwordForm);
+            await changePassword(user, passwordForm, setUser);
 
             alert("Password updated successfully!");
 
@@ -125,11 +126,11 @@ function SettingsPage({ user, setUser }) {
     }
 
     if (isProject) {
-        return <ProjectPage user={user}/>
+        return <ProjectPage user={user} setUser={setUser}/>
     }
 
     if (isMyTask) {
-        return <MyTaskPage user={user}/>
+        return <MyTaskPage user={user} setUser={setUser}/>
     }
 
     if (isLogin) {
@@ -162,7 +163,7 @@ function SettingsPage({ user, setUser }) {
                         <Settings size={40} color="white"/>
                         <span>Settings</span>
                     </p>
-                    <p className="side-bar-menu-selections logout-selection" onClick={() => {setIsLogin(true)}}>
+                    <p className="side-bar-menu-selections logout-selection" onClick={() => {handleLogout(setUser, setIsLogin)}}>
                         <LogOut size={40} color="white"/>
                         <span>Log Out</span>
                     </p>

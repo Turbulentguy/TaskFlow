@@ -31,11 +31,15 @@ def addMember(
             detail = "Project not found."
         )
 
-    queryRole = db.query(ProjectMember).filter(
-        ProjectMember.project_id == project_id
-    ).first()
+    is_owner = existingProject.owner_id == current_user.id
 
-    if (existingProject.owner_id != current_user.id) and (queryRole.role != "Admin"):
+    is_admin = db.query(ProjectMember).filter(
+        ProjectMember.project_id == project_id,
+        ProjectMember.user_id == current_user.id,
+        ProjectMember.role == "Admin"
+    ).first() is not None
+
+    if not is_owner and not is_admin:
         raise HTTPException(
             status_code = 403,
             detail = "Only the project owner or admin can add members."
@@ -207,14 +211,18 @@ def deleteMember(
             detail = "Project not found."
         )
 
-    queryRole = db.query(ProjectMember).filter(
-        ProjectMember.project_id == project_id
-    ).first()
+    is_owner = existingProject.owner_id == current_user.id
 
-    if (existingProject.owner_id != current_user.id) and (queryRole.role != "Admin"):
+    is_admin = db.query(ProjectMember).filter(
+        ProjectMember.project_id == project_id,
+        ProjectMember.user_id == current_user.id,
+        ProjectMember.role == "Admin"
+    ).first() is not None
+
+    if not is_owner and not is_admin:
         raise HTTPException(
             status_code = 403,
-            detail = "Access denied."
+            detail = "Only the project owner or admin can remove members."
         )
 
     queryUser = db.query(ProjectMember).filter(

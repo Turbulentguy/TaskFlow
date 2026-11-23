@@ -1,15 +1,18 @@
+import { fetchAPI } from "./api.js";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function getDashboard(user) {
-    const response = await fetch(
+async function getDashboard(user, setUser) {
+    const response = await fetchAPI(
         `${API_URL}/dashboard/summary`,
         {
             method: "GET",
             headers: {
                 "Content-Type": "Application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
-        }
+        },
+        user,
+        setUser
     );
 
     const data = await response.json();

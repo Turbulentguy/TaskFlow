@@ -114,7 +114,7 @@ def Login(
         value = refresh_token,
         httponly = True,
         secure = os.getenv("COOKIE_SECURE", "false").lower() == "true",
-        samesite = "lax",
+        samesite = "none" if os.getenv("COOKIE_SECURE", "false").lower() == "true" else "lax",
         max_age = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7")) * 86400,
         path = "/api/v1/auth"
     )
@@ -213,7 +213,7 @@ def Refresh(
         value = new_refresh_token,
         httponly = True,
         secure = os.getenv("COOKIE_SECURE", "false").lower() == "true",
-        samesite = "lax",
+        samesite = "none" if os.getenv("COOKIE_SECURE", "false").lower() == "true" else "lax",
         max_age = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7")) * 86400,
         path = "/api/v1/auth"
     )
@@ -243,7 +243,10 @@ def Logout(
 
     response.delete_cookie(
         key = "refresh_token",
-        path = "/api/v1/auth"
+        path = "/api/v1/auth",
+        secure = os.getenv("COOKIE_SECURE", "false").lower() == "true",
+        httponly = True,
+        samesite = "none" if os.getenv("COOKIE_SECURE", "false").lower() == "true" else "lax"
     )
 
     return {
